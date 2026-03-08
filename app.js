@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260308-2';
+  var ASSET_VERSION = '20260308-3';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -302,29 +302,47 @@
     var section = document.createElement('section');
     section.className = 'month-section';
     section.dataset.month = String(month);
-    var wrapper = document.createElement('div');
-    wrapper.className = 'table-scroll';
-    wrapper.dataset.month = String(month);
+    var stickyHead = document.createElement('div');
+    stickyHead.className = 'month-sticky-head';
+
+    var headScroll = document.createElement('div');
+    headScroll.className = 'table-scroll head-scroll';
+
+    var bodyScroll = document.createElement('div');
+    bodyScroll.className = 'table-scroll body-scroll';
+    bodyScroll.dataset.month = String(month);
 
     var yearState = C.ensureYearState(state, selectedYear);
     var entries = yearState.entries;
     var stats = C.computeMonthStats(selectedYear, month, entries);
-    var table = buildMonthTable(month, stats, entries, wrapper);
-    wrapper.appendChild(table);
-    section.appendChild(wrapper);
+    var headerTable = buildMonthHeaderTable(stats);
+    var bodyTable = buildMonthBodyTable(month, entries, bodyScroll);
 
-    wrapper.addEventListener('scroll', function () {
-      var ui = C.ensureYearState(state, selectedYear).ui;
-      ui.monthScroll[String(month)] = Math.round(wrapper.scrollLeft);
-      scheduleSave();
-    }, { passive: true });
+    headScroll.appendChild(headerTable);
+    stickyHead.appendChild(headScroll);
+    bodyScroll.appendChild(bodyTable);
+
+    section.appendChild(stickyHead);
+    section.appendChild(bodyScroll);
+
+    linkHorizontalScroll(headScroll, bodyScroll, month);
 
     var restoredScroll = Number(yearState.ui.monthScroll[String(month)] || 0);
     requestAnimationFrame(function () {
-      wrapper.scrollLeft = restoredScroll;
+      bodyScroll.scrollLeft = restoredScroll;
+      headScroll.scrollLeft = bodyScroll.scrollLeft;
     });
 
     return section;
+  }
+
+  function linkHorizontalScroll(headScroll, bodyScroll, month) {
+    bodyScroll.addEventListener('scroll', function () {
+      headScroll.scrollLeft = bodyScroll.scrollLeft;
+      var ui = C.ensureYearState(state, selectedYear).ui;
+      ui.monthScroll[String(month)] = Math.round(bodyScroll.scrollLeft);
+      scheduleSave();
+    }, { passive: true });
   }
 
   function createAggregateValues(stats) {
@@ -394,15 +412,24 @@
     table.appendChild(colgroup);
   }
 
-  function buildMonthTable(month, stats, entries, wrapper) {
+  function buildMonthHeaderTable(stats) {
     var table = document.createElement('table');
-    table.className = 'month-table';
+    table.className = 'month-table month-head-table';
 
     appendColgroup(table);
 
     var thead = document.createElement('thead');
     appendHeaderRows(thead, createAggregateValues(stats));
     table.appendChild(thead);
+
+    return table;
+  }
+
+  function buildMonthBodyTable(month, entries, wrapper) {
+    var table = document.createElement('table');
+    table.className = 'month-table month-body-table';
+
+    appendColgroup(table);
 
     var tbody = document.createElement('tbody');
     var daysInMonth = C.getDaysInMonth(selectedYear, month);
