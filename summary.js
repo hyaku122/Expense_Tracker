@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260308-3';
+  var ASSET_VERSION = '20260308-4';
 
   var summaryHeader = document.getElementById('summaryHeader');
   var summaryTitle = document.getElementById('summaryTitle');

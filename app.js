@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260308-3';
+  var ASSET_VERSION = '20260308-4';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -304,6 +304,8 @@
     section.dataset.month = String(month);
     var stickyHead = document.createElement('div');
     stickyHead.className = 'month-sticky-head';
+    var fixedHead = document.createElement('div');
+    fixedHead.className = 'month-fixed-head';
 
     var headScroll = document.createElement('div');
     headScroll.className = 'table-scroll head-scroll';
@@ -315,10 +317,13 @@
     var yearState = C.ensureYearState(state, selectedYear);
     var entries = yearState.entries;
     var stats = C.computeMonthStats(selectedYear, month, entries);
+    var fixedHeadTable = buildMonthFixedHeadTable(stats);
     var headerTable = buildMonthHeaderTable(stats);
     var bodyTable = buildMonthBodyTable(month, entries, bodyScroll);
 
+    fixedHead.appendChild(fixedHeadTable);
     headScroll.appendChild(headerTable);
+    stickyHead.appendChild(fixedHead);
     stickyHead.appendChild(headScroll);
     bodyScroll.appendChild(bodyTable);
 
@@ -365,18 +370,20 @@
     };
   }
 
-  function appendHeaderRows(thead, aggregateValues) {
+  function appendHeaderRows(thead, aggregateValues, columns, useStickyColumns) {
+    var targetColumns = columns || TABLE_COLUMNS;
+    var stickyEnabled = Boolean(useStickyColumns);
     var aggregateRow = document.createElement('tr');
     aggregateRow.className = 'aggregate-row';
 
-    TABLE_COLUMNS.forEach(function (column, columnIndex) {
+    targetColumns.forEach(function (column, columnIndex) {
       var th = document.createElement('th');
       th.dataset.column = column.key;
       th.textContent = aggregateValues[column.key] || '-';
-      if (columnIndex === 0) {
+      if (stickyEnabled && columnIndex === 0) {
         th.classList.add('sticky-col-1');
       }
-      if (columnIndex === 1) {
+      if (stickyEnabled && columnIndex === 1) {
         th.classList.add('sticky-col-2');
       }
       aggregateRow.appendChild(th);
@@ -384,14 +391,14 @@
 
     var columnRow = document.createElement('tr');
     columnRow.className = 'column-row';
-    TABLE_COLUMNS.forEach(function (column, columnIndex) {
+    targetColumns.forEach(function (column, columnIndex) {
       var th = document.createElement('th');
       th.dataset.column = column.key;
       th.textContent = column.label;
-      if (columnIndex === 0) {
+      if (stickyEnabled && columnIndex === 0) {
         th.classList.add('sticky-col-1');
       }
-      if (columnIndex === 1) {
+      if (stickyEnabled && columnIndex === 1) {
         th.classList.add('sticky-col-2');
       }
       columnRow.appendChild(th);
@@ -401,9 +408,10 @@
     thead.appendChild(columnRow);
   }
 
-  function appendColgroup(table) {
+  function appendColgroup(table, columns) {
+    var targetColumns = columns || TABLE_COLUMNS;
     var colgroup = document.createElement('colgroup');
-    TABLE_COLUMNS.forEach(function (column) {
+    targetColumns.forEach(function (column) {
       var col = document.createElement('col');
       var width = COLUMN_WIDTHS[column.key] || 84;
       col.style.width = width + 'px';
@@ -412,14 +420,29 @@
     table.appendChild(colgroup);
   }
 
+  function buildMonthFixedHeadTable(stats) {
+    var table = document.createElement('table');
+    table.className = 'month-table month-fixed-head-table';
+
+    var fixedColumns = TABLE_COLUMNS.slice(0, 2);
+    appendColgroup(table, fixedColumns);
+
+    var thead = document.createElement('thead');
+    appendHeaderRows(thead, createAggregateValues(stats), fixedColumns, false);
+    table.appendChild(thead);
+
+    return table;
+  }
+
   function buildMonthHeaderTable(stats) {
     var table = document.createElement('table');
     table.className = 'month-table month-head-table';
 
-    appendColgroup(table);
+    var headerColumns = TABLE_COLUMNS.slice(2);
+    appendColgroup(table, headerColumns);
 
     var thead = document.createElement('thead');
-    appendHeaderRows(thead, createAggregateValues(stats));
+    appendHeaderRows(thead, createAggregateValues(stats), headerColumns, false);
     table.appendChild(thead);
 
     return table;
