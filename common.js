@@ -61,7 +61,7 @@
     },
     bathMeditation: {
       key: 'bathMeditation',
-      label: '風呂瞑想',
+      label: '瞑想♨',
       kind: 'select',
       min: 5,
       max: 10,

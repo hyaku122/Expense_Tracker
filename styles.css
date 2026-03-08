@@ -265,7 +265,7 @@ body {
 
 .month-table .sticky-col-2 {
   position: sticky;
-  left: var(--date-col-width);
+  left: var(--table-date-width, var(--date-col-width));
   min-width: var(--weekday-col-width);
   max-width: var(--weekday-col-width);
   z-index: 17;

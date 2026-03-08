@@ -25,7 +25,7 @@
     { key: 'walk', label: '散歩' },
     { key: 'nightStairs', label: '夜階段' },
     { key: 'reading', label: '読書' },
-    { key: 'bathMeditation', label: '風呂瞑想' },
+    { key: 'bathMeditation', label: '瞑想♨' },
     { key: 'weight', label: '体重' }
   ];
   var COLUMN_WIDTHS = {
@@ -42,7 +42,7 @@
     walk: 46,
     nightStairs: 59,
     reading: 44,
-    bathMeditation: 77,
+    bathMeditation: 46,
     weight: 86
   };
   var AUTO_CLOSE_DEFAULT_FIELDS = {
@@ -109,22 +109,45 @@
     root.style.setProperty('--sticky-left-width', (dateWidth + weekdayWidth) + 'px');
   }
 
-  function syncStickyColumnVarsFromDom() {
-    var row = monthSections.querySelector('.month-head-table .column-row');
-    if (!row || row.children.length < 2) {
+  function syncStickyOffsetsForSection(section) {
+    if (!section) {
       return;
     }
 
-    var dateWidth = Math.round(row.children[0].getBoundingClientRect().width);
-    var weekdayWidth = Math.round(row.children[1].getBoundingClientRect().width);
-    if (dateWidth <= 0 || weekdayWidth <= 0) {
-      return;
-    }
+    var bodyTable = section.querySelector('.month-body-table');
+    var headTable = section.querySelector('.month-head-table');
+    [headTable, bodyTable].forEach(function (table) {
+      if (!table) {
+        return;
+      }
+      var first = table.querySelector('tr .sticky-col-1');
+      var second = table.querySelector('tr .sticky-col-2');
+      if (!first || !second) {
+        return;
+      }
+      var dateWidth = Math.round(first.getBoundingClientRect().width);
+      var weekdayWidth = Math.round(second.getBoundingClientRect().width);
+      if (dateWidth <= 0 || weekdayWidth <= 0) {
+        return;
+      }
+      table.style.setProperty('--table-date-width', dateWidth + 'px');
+      table.style.setProperty('--table-sticky-left-width', (dateWidth + weekdayWidth) + 'px');
+    });
 
-    var root = document.documentElement;
-    root.style.setProperty('--date-col-width', dateWidth + 'px');
-    root.style.setProperty('--weekday-col-width', weekdayWidth + 'px');
-    root.style.setProperty('--sticky-left-width', (dateWidth + weekdayWidth) + 'px');
+    if (bodyTable) {
+      var bodyFirst = bodyTable.querySelector('tr .sticky-col-1');
+      var bodySecond = bodyTable.querySelector('tr .sticky-col-2');
+      if (bodyFirst && bodySecond) {
+        var d = Math.round(bodyFirst.getBoundingClientRect().width);
+        var w = Math.round(bodySecond.getBoundingClientRect().width);
+        if (d > 0 && w > 0) {
+          var root = document.documentElement;
+          root.style.setProperty('--date-col-width', d + 'px');
+          root.style.setProperty('--weekday-col-width', w + 'px');
+          root.style.setProperty('--sticky-left-width', (d + w) + 'px');
+        }
+      }
+    }
   }
 
   function sanitizeYear(year) {
@@ -288,6 +311,9 @@
     monthSections.innerHTML = '';
     var section = buildMonthSection(activeMonth);
     monthSections.appendChild(section);
+    requestAnimationFrame(function () {
+      syncStickyOffsetsForSection(section);
+    });
   }
 
   function buildMonthSection(month) {
@@ -697,7 +723,11 @@
     var yearState = C.ensureYearState(state, selectedYear);
     yearState.ui.lastTouchedColumn[String(month)] = fieldKey;
 
-    var stickyWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sticky-left-width'), 10) || 122;
+    var table = cell.closest('.month-table');
+    var tableStickyWidth = table ? parseInt(getComputedStyle(table).getPropertyValue('--table-sticky-left-width'), 10) : NaN;
+    var stickyWidth = Number.isFinite(tableStickyWidth) && tableStickyWidth > 0
+      ? tableStickyWidth
+      : (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sticky-left-width'), 10) || 122);
     var target = Math.max(0, cell.offsetLeft - stickyWidth - 4);
 
     wrapper.scrollTo({ left: target, behavior: 'smooth' });
@@ -782,6 +812,7 @@
 
     var replacement = buildMonthSection(month);
     monthSections.replaceChild(replacement, currentSection);
+    syncStickyOffsetsForSection(replacement);
     updateStickyOffsets();
   }
 
@@ -792,7 +823,7 @@
     var height = topHeader.offsetHeight;
     document.documentElement.style.setProperty('--header-height', height + 'px');
     document.documentElement.style.setProperty('--table-sticky-top', height + 'px');
-    syncStickyColumnVarsFromDom();
+    syncStickyOffsetsForSection(monthSections.querySelector('.month-section'));
   }
 
   async function refreshToLatest() {
