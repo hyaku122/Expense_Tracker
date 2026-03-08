@@ -1,6 +1,6 @@
 ﻿:root {
   --app-max-width: 430px;
-  --date-col-width: 49px;
+  --date-col-width: 57px;
   --weekday-col-width: 29px;
   --sticky-left-width: calc(var(--date-col-width) + var(--weekday-col-width));
   --aggregate-height: 40px;

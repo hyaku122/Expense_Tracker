@@ -25,20 +25,20 @@
     { key: 'walk', label: '散歩' },
     { key: 'nightStairs', label: '夜階段' },
     { key: 'reading', label: '読書' },
-    { key: 'bathMeditation', label: 'お風呂瞑想' },
+    { key: 'bathMeditation', label: '風呂瞑想' },
     { key: 'weight', label: '体重' }
   ];
   var COLUMN_WIDTHS = {
-    date: 49,
+    date: 57,
     weekday: 29,
     wakeTime: 64,
     bedTime: 64,
-    sleepDuration: 58,
-    morningMeditation: 53,
+    sleepDuration: 73,
+    morningMeditation: 62,
     yoga: 46,
     morningStairs: 59,
-    mercari: 59,
-    paleo: 49,
+    mercari: 74,
+    paleo: 57,
     walk: 46,
     nightStairs: 59,
     reading: 44,
@@ -103,6 +103,24 @@
   function applyStickyColumnVars() {
     var dateWidth = COLUMN_WIDTHS.date || 74;
     var weekdayWidth = COLUMN_WIDTHS.weekday || 48;
+    var root = document.documentElement;
+    root.style.setProperty('--date-col-width', dateWidth + 'px');
+    root.style.setProperty('--weekday-col-width', weekdayWidth + 'px');
+    root.style.setProperty('--sticky-left-width', (dateWidth + weekdayWidth) + 'px');
+  }
+
+  function syncStickyColumnVarsFromDom() {
+    var row = monthSections.querySelector('.month-head-table .column-row');
+    if (!row || row.children.length < 2) {
+      return;
+    }
+
+    var dateWidth = Math.round(row.children[0].getBoundingClientRect().width);
+    var weekdayWidth = Math.round(row.children[1].getBoundingClientRect().width);
+    if (dateWidth <= 0 || weekdayWidth <= 0) {
+      return;
+    }
+
     var root = document.documentElement;
     root.style.setProperty('--date-col-width', dateWidth + 'px');
     root.style.setProperty('--weekday-col-width', weekdayWidth + 'px');
@@ -774,6 +792,7 @@
     var height = topHeader.offsetHeight;
     document.documentElement.style.setProperty('--header-height', height + 'px');
     document.documentElement.style.setProperty('--table-sticky-top', height + 'px');
+    syncStickyColumnVarsFromDom();
   }
 
   async function refreshToLatest() {

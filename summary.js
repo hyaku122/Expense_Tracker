@@ -171,7 +171,7 @@
       '散歩合計',
       '夜階段%',
       '読書合計',
-      'お風呂瞑想合計',
+      '風呂瞑想合計',
       '体重(月末)'
     ].forEach(function (label, index) {
       var th = document.createElement('th');
