@@ -28,6 +28,23 @@
     { key: 'bathMeditation', label: 'お風呂瞑想' },
     { key: 'weight', label: '体重' }
   ];
+  var COLUMN_WIDTHS = {
+    date: 74,
+    weekday: 48,
+    wakeTime: 128,
+    bedTime: 128,
+    sleepDuration: 96,
+    morningMeditation: 88,
+    yoga: 76,
+    morningStairs: 88,
+    mercari: 88,
+    paleo: 82,
+    walk: 92,
+    nightStairs: 88,
+    reading: 88,
+    bathMeditation: 116,
+    weight: 86
+  };
   var AUTO_CLOSE_DEFAULT_FIELDS = {
     morningMeditation: true,
     mercari: true,
@@ -276,42 +293,69 @@
     title.className = 'month-title';
     title.textContent = selectedYear + '年 ' + month + '月';
 
-    var wrapper = document.createElement('div');
-    wrapper.className = 'table-scroll';
-    wrapper.dataset.month = String(month);
+    var stickyHead = document.createElement('div');
+    stickyHead.className = 'month-sticky-head';
+
+    var headScroll = document.createElement('div');
+    headScroll.className = 'table-scroll head-scroll';
+
+    var bodyScroll = document.createElement('div');
+    bodyScroll.className = 'table-scroll body-scroll';
+    bodyScroll.dataset.month = String(month);
 
     var yearState = C.ensureYearState(state, selectedYear);
     var entries = yearState.entries;
     var stats = C.computeMonthStats(selectedYear, month, entries);
-    var table = buildMonthTable(month, stats, entries, wrapper);
+    var headerTable = buildMonthHeaderTable(stats);
+    var bodyTable = buildMonthBodyTable(month, entries, bodyScroll);
 
-    wrapper.appendChild(table);
+    headScroll.appendChild(headerTable);
+    stickyHead.appendChild(headScroll);
+    bodyScroll.appendChild(bodyTable);
+
     section.appendChild(title);
-    section.appendChild(wrapper);
+    section.appendChild(stickyHead);
+    section.appendChild(bodyScroll);
 
-    wrapper.addEventListener('scroll', function () {
-      var ui = C.ensureYearState(state, selectedYear).ui;
-      ui.monthScroll[String(month)] = Math.round(wrapper.scrollLeft);
-      scheduleSave();
-    });
+    linkHorizontalScroll(headScroll, bodyScroll, month);
 
     var restoredScroll = Number(yearState.ui.monthScroll[String(month)] || 0);
     requestAnimationFrame(function () {
-      wrapper.scrollLeft = restoredScroll;
+      headScroll.scrollLeft = restoredScroll;
+      bodyScroll.scrollLeft = restoredScroll;
     });
 
     return section;
   }
 
-  function buildMonthTable(month, stats, entries, wrapper) {
-    var table = document.createElement('table');
-    table.className = 'month-table';
+  function linkHorizontalScroll(headScroll, bodyScroll, month) {
+    var syncing = false;
 
-    var thead = document.createElement('thead');
-    var aggregateRow = document.createElement('tr');
-    aggregateRow.className = 'aggregate-row';
+    function sync(from, to) {
+      if (syncing) {
+        return;
+      }
+      syncing = true;
+      to.scrollLeft = from.scrollLeft;
+      var ui = C.ensureYearState(state, selectedYear).ui;
+      ui.monthScroll[String(month)] = Math.round(from.scrollLeft);
+      scheduleSave();
+      requestAnimationFrame(function () {
+        syncing = false;
+      });
+    }
 
-    var aggregateValues = {
+    headScroll.addEventListener('scroll', function () {
+      sync(headScroll, bodyScroll);
+    }, { passive: true });
+
+    bodyScroll.addEventListener('scroll', function () {
+      sync(bodyScroll, headScroll);
+    }, { passive: true });
+  }
+
+  function createAggregateValues(stats) {
+    return {
       date: '集計',
       weekday: '-',
       wakeTime: C.formatMinutesToClock(stats.wakeAvg),
@@ -328,6 +372,11 @@
       bathMeditation: String(Math.round(stats.totals.bathMeditation)),
       weight: stats.monthEndWeight === null ? '-' : C.formatNumber(stats.monthEndWeight, 1)
     };
+  }
+
+  function appendHeaderRows(thead, aggregateValues) {
+    var aggregateRow = document.createElement('tr');
+    aggregateRow.className = 'aggregate-row';
 
     TABLE_COLUMNS.forEach(function (column, columnIndex) {
       var th = document.createElement('th');
@@ -359,6 +408,37 @@
 
     thead.appendChild(aggregateRow);
     thead.appendChild(columnRow);
+  }
+
+  function appendColgroup(table) {
+    var colgroup = document.createElement('colgroup');
+    TABLE_COLUMNS.forEach(function (column) {
+      var col = document.createElement('col');
+      var width = COLUMN_WIDTHS[column.key] || 84;
+      col.style.width = width + 'px';
+      colgroup.appendChild(col);
+    });
+    table.appendChild(colgroup);
+  }
+
+  function buildMonthHeaderTable(stats) {
+    var table = document.createElement('table');
+    table.className = 'month-table month-head-table';
+
+    appendColgroup(table);
+
+    var thead = document.createElement('thead');
+    appendHeaderRows(thead, createAggregateValues(stats));
+    table.appendChild(thead);
+
+    return table;
+  }
+
+  function buildMonthBodyTable(month, entries, wrapper) {
+    var table = document.createElement('table');
+    table.className = 'month-table month-body-table';
+
+    appendColgroup(table);
 
     var tbody = document.createElement('tbody');
     var daysInMonth = C.getDaysInMonth(selectedYear, month);
@@ -422,7 +502,6 @@
       tbody.appendChild(row);
     }
 
-    table.appendChild(thead);
     table.appendChild(tbody);
 
     return table;
@@ -712,6 +791,7 @@
 
     scrollTicking = true;
     requestAnimationFrame(function () {
+      updateStickyOffsets();
       syncActiveMonthByScroll();
       scrollTicking = false;
     });
