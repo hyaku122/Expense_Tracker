@@ -212,7 +212,7 @@ body {
 }
 
 .head-scroll {
-  overflow-x: hidden;
+  overflow-x: auto;
   pointer-events: none;
   border-bottom: 1px solid rgba(188, 167, 144, 0.65);
 }
