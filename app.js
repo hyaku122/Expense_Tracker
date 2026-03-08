@@ -342,36 +342,19 @@
 
     var restoredScroll = Number(yearState.ui.monthScroll[String(month)] || 0);
     requestAnimationFrame(function () {
-      headScroll.scrollLeft = restoredScroll;
       bodyScroll.scrollLeft = restoredScroll;
+      headScroll.scrollLeft = bodyScroll.scrollLeft;
     });
 
     return section;
   }
 
   function linkHorizontalScroll(headScroll, bodyScroll, month) {
-    var syncing = false;
-
-    function sync(from, to) {
-      if (syncing) {
-        return;
-      }
-      syncing = true;
-      to.scrollLeft = from.scrollLeft;
-      var ui = C.ensureYearState(state, selectedYear).ui;
-      ui.monthScroll[String(month)] = Math.round(from.scrollLeft);
-      scheduleSave();
-      requestAnimationFrame(function () {
-        syncing = false;
-      });
-    }
-
-    headScroll.addEventListener('scroll', function () {
-      sync(headScroll, bodyScroll);
-    }, { passive: true });
-
     bodyScroll.addEventListener('scroll', function () {
-      sync(bodyScroll, headScroll);
+      headScroll.scrollLeft = bodyScroll.scrollLeft;
+      var ui = C.ensureYearState(state, selectedYear).ui;
+      ui.monthScroll[String(month)] = Math.round(bodyScroll.scrollLeft);
+      scheduleSave();
     }, { passive: true });
   }
 
