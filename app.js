@@ -28,6 +28,12 @@
     { key: 'bathMeditation', label: 'お風呂瞑想' },
     { key: 'weight', label: '体重' }
   ];
+  var AUTO_CLOSE_DEFAULT_FIELDS = {
+    morningMeditation: true,
+    mercari: true,
+    walk: true,
+    bathMeditation: true
+  };
 
   var topHeader = document.getElementById('topHeader');
   var yearLabel = document.getElementById('yearLabel');
@@ -463,6 +469,7 @@
   function createSelectInput(fieldKey, value, dateKey, month, wrapper, cell) {
     var field = C.FIELDS[fieldKey];
     var select = document.createElement('select');
+    var seededDefaultPending = false;
     select.className = 'select-input';
 
     var emptyOption = document.createElement('option');
@@ -486,7 +493,7 @@
         return false;
       }
       select.value = String(field.defaultValue);
-      persistField(dateKey, month, fieldKey, field.defaultValue, true);
+      seededDefaultPending = persistField(dateKey, month, fieldKey, field.defaultValue, false);
       return true;
     }
 
@@ -494,12 +501,18 @@
       rememberTouched(month, fieldKey, wrapper, cell);
       var seeded = applyDefaultIfNeeded();
       if (seeded) {
-        if (event && typeof event.preventDefault === 'function') {
-          event.preventDefault();
+        if (AUTO_CLOSE_DEFAULT_FIELDS[fieldKey]) {
+          if (event && typeof event.preventDefault === 'function') {
+            event.preventDefault();
+          }
+          requestAnimationFrame(function () {
+            select.blur();
+            if (seededDefaultPending) {
+              seededDefaultPending = false;
+              rerenderMonthSection(month);
+            }
+          });
         }
-        requestAnimationFrame(function () {
-          select.blur();
-        });
         return true;
       }
       return false;
@@ -508,10 +521,6 @@
     select.addEventListener('pointerdown', function (event) {
       handleFirstTap(event);
     });
-
-    select.addEventListener('touchstart', function (event) {
-      handleFirstTap(event);
-    }, { passive: false });
 
     select.addEventListener('focus', function (event) {
       var seeded = handleFirstTap(event);
@@ -522,7 +531,16 @@
 
     select.addEventListener('change', function () {
       var parsed = Number(select.value);
+      seededDefaultPending = false;
       persistField(dateKey, month, fieldKey, Number.isFinite(parsed) ? parsed : null, true);
+    });
+
+    select.addEventListener('blur', function () {
+      if (!seededDefaultPending) {
+        return;
+      }
+      seededDefaultPending = false;
+      rerenderMonthSection(month);
     });
 
     return select;
@@ -725,7 +743,7 @@
     }
     var height = topHeader.offsetHeight;
     document.documentElement.style.setProperty('--header-height', height + 'px');
-    document.documentElement.style.setProperty('--table-sticky-top', '0px');
+    document.documentElement.style.setProperty('--table-sticky-top', height + 'px');
   }
 
   async function refreshToLatest() {
