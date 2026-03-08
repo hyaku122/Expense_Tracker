@@ -28,12 +28,6 @@
     { key: 'bathMeditation', label: 'お風呂瞑想' },
     { key: 'weight', label: '体重' }
   ];
-  var AUTO_RETURN_DEFAULT_FIELDS = {
-    morningMeditation: true,
-    mercari: true,
-    walk: true,
-    bathMeditation: true
-  };
 
   var topHeader = document.getElementById('topHeader');
   var yearLabel = document.getElementById('yearLabel');
@@ -331,6 +325,7 @@
 
     TABLE_COLUMNS.forEach(function (column, columnIndex) {
       var th = document.createElement('th');
+      th.dataset.column = column.key;
       th.textContent = aggregateValues[column.key] || '-';
       if (columnIndex === 0) {
         th.classList.add('sticky-col-1');
@@ -345,6 +340,7 @@
     columnRow.className = 'column-row';
     TABLE_COLUMNS.forEach(function (column, columnIndex) {
       var th = document.createElement('th');
+      th.dataset.column = column.key;
       th.textContent = column.label;
       if (columnIndex === 0) {
         th.classList.add('sticky-col-1');
@@ -403,8 +399,8 @@
             cell.style.background = color;
           }
         } else if (isSelectField(column.key)) {
-          var metricInput = createMetricInput(column.key, entry[column.key], dateKey, month, wrapper, cell);
-          cell.appendChild(metricInput);
+          var selectInput = createSelectInput(column.key, entry[column.key], dateKey, month, wrapper, cell);
+          cell.appendChild(selectInput);
         } else if (isCheckField(column.key)) {
           var checkbox = createCheckInput(column.key, Boolean(entry[column.key]), dateKey, month, wrapper, cell);
           cell.appendChild(checkbox);
@@ -464,83 +460,72 @@
     return input;
   }
 
-  function createMetricInput(fieldKey, value, dateKey, month, wrapper, cell) {
+  function createSelectInput(fieldKey, value, dateKey, month, wrapper, cell) {
     var field = C.FIELDS[fieldKey];
-    var input = document.createElement('input');
-    var seededDefaultPending = false;
-    input.type = 'number';
-    input.className = 'metric-input';
-    input.min = String(field.min);
-    input.max = String(field.max);
-    input.step = String(field.step || 1);
-    input.inputMode = 'numeric';
+    var select = document.createElement('select');
+    select.className = 'select-input';
 
-    if (value !== undefined && value !== null && value !== '') {
-      input.value = String(value);
+    var emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = '';
+    select.appendChild(emptyOption);
+
+    for (var i = field.min; i <= field.max; i += field.step) {
+      var option = document.createElement('option');
+      option.value = String(i);
+      option.textContent = String(i);
+      select.appendChild(option);
     }
 
-    function applyDefaultIfNeeded(rerender) {
-      if (input.value !== '') {
+    if (value !== undefined && value !== null && value !== '') {
+      select.value = String(value);
+    }
+
+    function applyDefaultIfNeeded() {
+      if (select.value !== '') {
         return false;
       }
-      input.value = String(field.defaultValue);
-      var changed = persistField(dateKey, month, fieldKey, field.defaultValue, rerender);
-      seededDefaultPending = !rerender && changed;
+      select.value = String(field.defaultValue);
+      persistField(dateKey, month, fieldKey, field.defaultValue, true);
       return true;
     }
 
-    function onTouched() {
+    function handleFirstTap(event) {
       rememberTouched(month, fieldKey, wrapper, cell);
-      var shouldAutoReturn = Boolean(AUTO_RETURN_DEFAULT_FIELDS[fieldKey]);
-      var seeded = applyDefaultIfNeeded(shouldAutoReturn);
-      if (seeded && shouldAutoReturn) {
-        input.blur();
+      var seeded = applyDefaultIfNeeded();
+      if (seeded) {
+        if (event && typeof event.preventDefault === 'function') {
+          event.preventDefault();
+        }
+        requestAnimationFrame(function () {
+          select.blur();
+        });
+        return true;
       }
+      return false;
     }
 
-    function commitCurrentValue() {
-      if (!input.value) {
-        var clearedChanged = persistField(dateKey, month, fieldKey, null, true);
-        if (!clearedChanged && seededDefaultPending) {
-          rerenderMonthSection(month);
-        }
-        seededDefaultPending = false;
+    select.addEventListener('pointerdown', function (event) {
+      handleFirstTap(event);
+    });
+
+    select.addEventListener('touchstart', function (event) {
+      handleFirstTap(event);
+    }, { passive: false });
+
+    select.addEventListener('focus', function (event) {
+      var seeded = handleFirstTap(event);
+      if (seeded) {
         return;
-      }
-
-      var parsed = Number(input.value);
-      if (!Number.isFinite(parsed)) {
-        var invalidChanged = persistField(dateKey, month, fieldKey, null, true);
-        if (!invalidChanged && seededDefaultPending) {
-          rerenderMonthSection(month);
-        }
-        seededDefaultPending = false;
-        return;
-      }
-
-      var clamped = Math.min(field.max, Math.max(field.min, parsed));
-      if ((field.step || 1) === 1) {
-        clamped = Math.round(clamped);
-      }
-      input.value = String(clamped);
-      var committedChanged = persistField(dateKey, month, fieldKey, clamped, true);
-      if (!committedChanged && seededDefaultPending) {
-        rerenderMonthSection(month);
-      }
-      seededDefaultPending = false;
-    }
-
-    input.addEventListener('focus', onTouched);
-    input.addEventListener('change', commitCurrentValue);
-    input.addEventListener('blur', commitCurrentValue);
-
-    input.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
-        input.blur();
       }
     });
 
-    return input;
+    select.addEventListener('change', function () {
+      var parsed = Number(select.value);
+      persistField(dateKey, month, fieldKey, Number.isFinite(parsed) ? parsed : null, true);
+    });
+
+    return select;
   }
 
   function createCheckInput(fieldKey, checked, dateKey, month, wrapper, cell) {
@@ -740,7 +725,7 @@
     }
     var height = topHeader.offsetHeight;
     document.documentElement.style.setProperty('--header-height', height + 'px');
-    document.documentElement.style.setProperty('--table-sticky-top', height + 'px');
+    document.documentElement.style.setProperty('--table-sticky-top', '0px');
   }
 
   async function refreshToLatest() {

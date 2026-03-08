@@ -216,6 +216,14 @@ body {
   background: #ffffff;
 }
 
+.month-table th[data-column="wakeTime"],
+.month-table td[data-column="wakeTime"],
+.month-table th[data-column="bedTime"],
+.month-table td[data-column="bedTime"] {
+  min-width: 118px;
+  width: 118px;
+}
+
 .month-table thead th {
   font-weight: 700;
   color: #223443;
@@ -284,7 +292,7 @@ body {
 }
 
 .time-input,
-.metric-input,
+.select-input,
 .weight-input {
   display: block;
   width: 100%;
@@ -301,16 +309,37 @@ body {
 }
 
 .time-input {
+  -webkit-appearance: none;
+  appearance: none;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  padding: 2px;
 }
 
-.metric-input,
+.time-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.time-input::-webkit-date-and-time-value {
+  text-align: center;
+}
+
+.select-input,
 .weight-input {
   appearance: textfield;
 }
 
-.metric-input::-webkit-outer-spin-button,
-.metric-input::-webkit-inner-spin-button,
+.select-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: none;
+  padding-right: 4px;
+}
+
+.select-input::-ms-expand {
+  display: none;
+}
+
 .weight-input::-webkit-outer-spin-button,
 .weight-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
