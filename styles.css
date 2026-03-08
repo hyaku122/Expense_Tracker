@@ -1,7 +1,7 @@
 ﻿:root {
   --app-max-width: 430px;
-  --date-col-width: 74px;
-  --weekday-col-width: 48px;
+  --date-col-width: 49px;
+  --weekday-col-width: 29px;
   --sticky-left-width: calc(var(--date-col-width) + var(--weekday-col-width));
   --aggregate-height: 40px;
   --header-height: 140px;
@@ -220,7 +220,7 @@ body {
   border-spacing: 0;
   table-layout: fixed;
   width: max-content;
-  min-width: 1120px;
+  min-width: 0;
   font-size: 0.9rem;
 }
 
@@ -233,14 +233,6 @@ body {
   text-align: center;
   height: 38px;
   background: #ffffff;
-}
-
-.month-table th[data-column="wakeTime"],
-.month-table td[data-column="wakeTime"],
-.month-table th[data-column="bedTime"],
-.month-table td[data-column="bedTime"] {
-  min-width: 128px;
-  width: 128px;
 }
 
 .month-table thead th {

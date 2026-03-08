@@ -29,20 +29,20 @@
     { key: 'weight', label: '体重' }
   ];
   var COLUMN_WIDTHS = {
-    date: 74,
-    weekday: 48,
-    wakeTime: 128,
-    bedTime: 128,
-    sleepDuration: 96,
-    morningMeditation: 88,
-    yoga: 76,
-    morningStairs: 88,
-    mercari: 88,
-    paleo: 82,
-    walk: 92,
-    nightStairs: 88,
-    reading: 88,
-    bathMeditation: 116,
+    date: 49,
+    weekday: 29,
+    wakeTime: 64,
+    bedTime: 64,
+    sleepDuration: 58,
+    morningMeditation: 53,
+    yoga: 46,
+    morningStairs: 59,
+    mercari: 59,
+    paleo: 49,
+    walk: 46,
+    nightStairs: 59,
+    reading: 44,
+    bathMeditation: 77,
     weight: 86
   };
   var AUTO_CLOSE_DEFAULT_FIELDS = {
@@ -81,6 +81,7 @@
   init();
 
   function init() {
+    applyStickyColumnVars();
     bindGlobalEvents();
     bindSettingsEvents();
     registerServiceWorker();
@@ -97,6 +98,15 @@
       updateStickyOffsets();
       scrollTabToMonth(activeMonth, false);
     });
+  }
+
+  function applyStickyColumnVars() {
+    var dateWidth = COLUMN_WIDTHS.date || 74;
+    var weekdayWidth = COLUMN_WIDTHS.weekday || 48;
+    var root = document.documentElement;
+    root.style.setProperty('--date-col-width', dateWidth + 'px');
+    root.style.setProperty('--weekday-col-width', weekdayWidth + 'px');
+    root.style.setProperty('--sticky-left-width', (dateWidth + weekdayWidth) + 'px');
   }
 
   function sanitizeYear(year) {
