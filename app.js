@@ -76,8 +76,6 @@
   var state = initialState;
   var selectedYear = sanitizeYear(Number.isFinite(urlYear) ? urlYear : initialState.selectedYear || now.getFullYear());
   var activeMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 1;
-
-  var scrollTicking = false;
   var saveTimer = null;
 
   init();
@@ -94,8 +92,6 @@
         updateStickyOffsets();
       }
     });
-
-    window.addEventListener('scroll', onWindowScroll, { passive: true });
 
     requestAnimationFrame(function () {
       updateStickyOffsets();
@@ -159,7 +155,7 @@
         state.selectedYear = selectedYear;
         C.ensureYearState(state, selectedYear);
         C.saveState(state);
-        activeMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 1;
+        activeMonth = 1;
         renderAll();
         closeSettings();
         alert('復元しました。');
@@ -188,7 +184,7 @@
     C.ensureYearState(state, selectedYear);
     C.saveState(state);
 
-    activeMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 1;
+    activeMonth = 1;
 
     renderAll();
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -230,7 +226,7 @@
         return function () {
           activeMonth = monthValue;
           updateMonthTabState();
-          scrollToMonthSection(monthValue, true);
+          renderAllMonthSections();
           scrollTabToMonth(monthValue, true);
         };
       })(month));
@@ -260,38 +256,16 @@
     });
   }
 
-  function scrollToMonthSection(month, smooth) {
-    var section = monthSections.querySelector('.month-section[data-month="' + month + '"]');
-    if (!section) {
-      return;
-    }
-
-    var headerHeight = topHeader ? topHeader.offsetHeight : 0;
-    var top = window.scrollY + section.getBoundingClientRect().top - headerHeight - 8;
-
-    window.scrollTo({
-      top: Math.max(0, top),
-      behavior: smooth ? 'smooth' : 'auto'
-    });
-  }
-
   function renderAllMonthSections() {
     monthSections.innerHTML = '';
-
-    for (var month = 1; month <= 12; month += 1) {
-      var section = buildMonthSection(month);
-      monthSections.appendChild(section);
-    }
+    var section = buildMonthSection(activeMonth);
+    monthSections.appendChild(section);
   }
 
   function buildMonthSection(month) {
     var section = document.createElement('section');
     section.className = 'month-section';
     section.dataset.month = String(month);
-
-    var title = document.createElement('h2');
-    title.className = 'month-title';
-    title.textContent = selectedYear + '年 ' + month + '月';
 
     var stickyHead = document.createElement('div');
     stickyHead.className = 'month-sticky-head';
@@ -313,7 +287,6 @@
     stickyHead.appendChild(headScroll);
     bodyScroll.appendChild(bodyTable);
 
-    section.appendChild(title);
     section.appendChild(stickyHead);
     section.appendChild(bodyScroll);
 
@@ -782,39 +755,6 @@
     var replacement = buildMonthSection(month);
     monthSections.replaceChild(replacement, currentSection);
     updateStickyOffsets();
-  }
-
-  function onWindowScroll() {
-    if (scrollTicking) {
-      return;
-    }
-
-    scrollTicking = true;
-    requestAnimationFrame(function () {
-      updateStickyOffsets();
-      syncActiveMonthByScroll();
-      scrollTicking = false;
-    });
-  }
-
-  function syncActiveMonthByScroll() {
-    var headerBottom = (topHeader ? topHeader.getBoundingClientRect().bottom : 0) + 8;
-    var nearest = 1;
-
-    for (var month = 1; month <= 12; month += 1) {
-      var section = monthSections.querySelector('.month-section[data-month="' + month + '"]');
-      if (!section) {
-        continue;
-      }
-      if (section.getBoundingClientRect().top <= headerBottom) {
-        nearest = month;
-      }
-    }
-
-    if (nearest !== activeMonth) {
-      activeMonth = nearest;
-      updateMonthTabState();
-    }
   }
 
   function updateStickyOffsets() {
