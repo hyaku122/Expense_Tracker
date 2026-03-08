@@ -42,7 +42,7 @@
     walk: 46,
     nightStairs: 59,
     reading: 44,
-    bathMeditation: 46,
+    bathMeditation: 58,
     weight: 86
   };
   var AUTO_CLOSE_DEFAULT_FIELDS = {
@@ -114,40 +114,34 @@
       return;
     }
 
+    var dateWidth = COLUMN_WIDTHS.date || 57;
+    var weekdayWidth = COLUMN_WIDTHS.weekday || 29;
     var bodyTable = section.querySelector('.month-body-table');
     var headTable = section.querySelector('.month-head-table');
     [headTable, bodyTable].forEach(function (table) {
       if (!table) {
         return;
       }
-      var first = table.querySelector('tr .sticky-col-1');
-      var second = table.querySelector('tr .sticky-col-2');
-      if (!first || !second) {
-        return;
-      }
-      var dateWidth = Math.round(first.getBoundingClientRect().width);
-      var weekdayWidth = Math.round(second.getBoundingClientRect().width);
-      if (dateWidth <= 0 || weekdayWidth <= 0) {
-        return;
-      }
       table.style.setProperty('--table-date-width', dateWidth + 'px');
       table.style.setProperty('--table-sticky-left-width', (dateWidth + weekdayWidth) + 'px');
+      table.querySelectorAll('.sticky-col-1').forEach(function (cell) {
+        cell.style.left = '0px';
+        cell.style.width = dateWidth + 'px';
+        cell.style.minWidth = dateWidth + 'px';
+        cell.style.maxWidth = dateWidth + 'px';
+      });
+      table.querySelectorAll('.sticky-col-2').forEach(function (cell) {
+        cell.style.left = dateWidth + 'px';
+        cell.style.width = weekdayWidth + 'px';
+        cell.style.minWidth = weekdayWidth + 'px';
+        cell.style.maxWidth = weekdayWidth + 'px';
+      });
     });
 
-    if (bodyTable) {
-      var bodyFirst = bodyTable.querySelector('tr .sticky-col-1');
-      var bodySecond = bodyTable.querySelector('tr .sticky-col-2');
-      if (bodyFirst && bodySecond) {
-        var d = Math.round(bodyFirst.getBoundingClientRect().width);
-        var w = Math.round(bodySecond.getBoundingClientRect().width);
-        if (d > 0 && w > 0) {
-          var root = document.documentElement;
-          root.style.setProperty('--date-col-width', d + 'px');
-          root.style.setProperty('--weekday-col-width', w + 'px');
-          root.style.setProperty('--sticky-left-width', (d + w) + 'px');
-        }
-      }
-    }
+    var root = document.documentElement;
+    root.style.setProperty('--date-col-width', dateWidth + 'px');
+    root.style.setProperty('--weekday-col-width', weekdayWidth + 'px');
+    root.style.setProperty('--sticky-left-width', (dateWidth + weekdayWidth) + 'px');
   }
 
   function sanitizeYear(year) {

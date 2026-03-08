@@ -233,6 +233,8 @@ body {
   text-align: center;
   height: 38px;
   background: #ffffff;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .month-table thead th {
