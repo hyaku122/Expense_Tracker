@@ -1,15 +1,15 @@
 ﻿const CACHE_PREFIX = 'mindful-life-log-cache';
-const CACHE_VERSION = '20260308-v1';
+const CACHE_VERSION = '20260308-v2';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   './',
   './index.html',
   './summary.html',
-  './styles.css?v=20260308',
-  './common.js?v=20260308',
-  './app.js?v=20260308',
-  './summary.js?v=20260308',
+  './styles.css?v=20260308-2',
+  './common.js?v=20260308-2',
+  './app.js?v=20260308-2',
+  './summary.js?v=20260308-2',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

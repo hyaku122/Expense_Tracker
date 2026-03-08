@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260308';
+  var ASSET_VERSION = '20260308-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -116,26 +116,14 @@
 
     var dateWidth = COLUMN_WIDTHS.date || 57;
     var weekdayWidth = COLUMN_WIDTHS.weekday || 29;
-    var bodyTable = section.querySelector('.month-body-table');
-    var headTable = section.querySelector('.month-head-table');
-    [headTable, bodyTable].forEach(function (table) {
+    var tables = section.querySelectorAll('.month-table');
+    tables.forEach(function (table) {
       if (!table) {
         return;
       }
       table.style.setProperty('--table-date-width', dateWidth + 'px');
+      table.style.setProperty('--table-weekday-width', weekdayWidth + 'px');
       table.style.setProperty('--table-sticky-left-width', (dateWidth + weekdayWidth) + 'px');
-      table.querySelectorAll('.sticky-col-1').forEach(function (cell) {
-        cell.style.left = '0px';
-        cell.style.width = dateWidth + 'px';
-        cell.style.minWidth = dateWidth + 'px';
-        cell.style.maxWidth = dateWidth + 'px';
-      });
-      table.querySelectorAll('.sticky-col-2').forEach(function (cell) {
-        cell.style.left = dateWidth + 'px';
-        cell.style.width = weekdayWidth + 'px';
-        cell.style.minWidth = weekdayWidth + 'px';
-        cell.style.maxWidth = weekdayWidth + 'px';
-      });
     });
 
     var root = document.documentElement;
@@ -314,48 +302,29 @@
     var section = document.createElement('section');
     section.className = 'month-section';
     section.dataset.month = String(month);
-
-    var stickyHead = document.createElement('div');
-    stickyHead.className = 'month-sticky-head';
-
-    var headScroll = document.createElement('div');
-    headScroll.className = 'table-scroll head-scroll';
-
-    var bodyScroll = document.createElement('div');
-    bodyScroll.className = 'table-scroll body-scroll';
-    bodyScroll.dataset.month = String(month);
+    var wrapper = document.createElement('div');
+    wrapper.className = 'table-scroll';
+    wrapper.dataset.month = String(month);
 
     var yearState = C.ensureYearState(state, selectedYear);
     var entries = yearState.entries;
     var stats = C.computeMonthStats(selectedYear, month, entries);
-    var headerTable = buildMonthHeaderTable(stats);
-    var bodyTable = buildMonthBodyTable(month, entries, bodyScroll);
+    var table = buildMonthTable(month, stats, entries, wrapper);
+    wrapper.appendChild(table);
+    section.appendChild(wrapper);
 
-    headScroll.appendChild(headerTable);
-    stickyHead.appendChild(headScroll);
-    bodyScroll.appendChild(bodyTable);
-
-    section.appendChild(stickyHead);
-    section.appendChild(bodyScroll);
-
-    linkHorizontalScroll(headScroll, bodyScroll, month);
+    wrapper.addEventListener('scroll', function () {
+      var ui = C.ensureYearState(state, selectedYear).ui;
+      ui.monthScroll[String(month)] = Math.round(wrapper.scrollLeft);
+      scheduleSave();
+    }, { passive: true });
 
     var restoredScroll = Number(yearState.ui.monthScroll[String(month)] || 0);
     requestAnimationFrame(function () {
-      bodyScroll.scrollLeft = restoredScroll;
-      headScroll.scrollLeft = bodyScroll.scrollLeft;
+      wrapper.scrollLeft = restoredScroll;
     });
 
     return section;
-  }
-
-  function linkHorizontalScroll(headScroll, bodyScroll, month) {
-    bodyScroll.addEventListener('scroll', function () {
-      headScroll.scrollLeft = bodyScroll.scrollLeft;
-      var ui = C.ensureYearState(state, selectedYear).ui;
-      ui.monthScroll[String(month)] = Math.round(bodyScroll.scrollLeft);
-      scheduleSave();
-    }, { passive: true });
   }
 
   function createAggregateValues(stats) {
@@ -425,24 +394,15 @@
     table.appendChild(colgroup);
   }
 
-  function buildMonthHeaderTable(stats) {
+  function buildMonthTable(month, stats, entries, wrapper) {
     var table = document.createElement('table');
-    table.className = 'month-table month-head-table';
+    table.className = 'month-table';
 
     appendColgroup(table);
 
     var thead = document.createElement('thead');
     appendHeaderRows(thead, createAggregateValues(stats));
     table.appendChild(thead);
-
-    return table;
-  }
-
-  function buildMonthBodyTable(month, entries, wrapper) {
-    var table = document.createElement('table');
-    table.className = 'month-table month-body-table';
-
-    appendColgroup(table);
 
     var tbody = document.createElement('tbody');
     var daysInMonth = C.getDaysInMonth(selectedYear, month);
