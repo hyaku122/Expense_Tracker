@@ -5,8 +5,8 @@
   --sticky-left-width: calc(var(--date-col-width) + var(--weekday-col-width));
   --aggregate-height: 40px;
   --header-height: 140px;
-  --table-sticky-top: 146px;
-  --summary-sticky-top: 118px;
+  --table-sticky-top: 0px;
+  --summary-sticky-top: 0px;
   --line: #cfd6dd;
   --bg-glass: rgba(255, 255, 255, 0.88);
   --text-main: #23303f;
@@ -176,7 +176,7 @@ body {
   margin-bottom: 14px;
   border: 1px solid rgba(148, 162, 174, 0.55);
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   background: var(--bg-glass);
   box-shadow: 0 2px 8px rgba(84, 102, 122, 0.15);
 }
@@ -192,6 +192,8 @@ body {
 
 .table-scroll {
   overflow-x: auto;
+  overflow-y: visible;
+  position: relative;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -205,7 +207,7 @@ body {
 
 .month-table th,
 .month-table td {
-  min-width: 74px;
+  min-width: 78px;
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   padding: 4px 5px;
@@ -282,9 +284,12 @@ body {
 }
 
 .time-input,
-.select-input,
+.metric-input,
 .weight-input {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 30px;
   border: 1px solid #b5c0ca;
   border-radius: 9px;
@@ -296,15 +301,20 @@ body {
 }
 
 .time-input {
-  min-width: 92px;
+  font-variant-numeric: tabular-nums;
 }
 
-.select-input {
-  min-width: 70px;
-}
-
+.metric-input,
 .weight-input {
-  min-width: 68px;
+  appearance: textfield;
+}
+
+.metric-input::-webkit-outer-spin-button,
+.metric-input::-webkit-inner-spin-button,
+.weight-input::-webkit-outer-spin-button,
+.weight-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .check-cell {

@@ -28,6 +28,12 @@
     { key: 'bathMeditation', label: 'お風呂瞑想' },
     { key: 'weight', label: '体重' }
   ];
+  var AUTO_RETURN_DEFAULT_FIELDS = {
+    morningMeditation: true,
+    mercari: true,
+    walk: true,
+    bathMeditation: true
+  };
 
   var topHeader = document.getElementById('topHeader');
   var yearLabel = document.getElementById('yearLabel');
@@ -397,8 +403,8 @@
             cell.style.background = color;
           }
         } else if (isSelectField(column.key)) {
-          var select = createSelectInput(column.key, entry[column.key], dateKey, month, wrapper, cell);
-          cell.appendChild(select);
+          var metricInput = createMetricInput(column.key, entry[column.key], dateKey, month, wrapper, cell);
+          cell.appendChild(metricInput);
         } else if (isCheckField(column.key)) {
           var checkbox = createCheckInput(column.key, Boolean(entry[column.key]), dateKey, month, wrapper, cell);
           cell.appendChild(checkbox);
@@ -458,49 +464,83 @@
     return input;
   }
 
-  function createSelectInput(fieldKey, value, dateKey, month, wrapper, cell) {
+  function createMetricInput(fieldKey, value, dateKey, month, wrapper, cell) {
     var field = C.FIELDS[fieldKey];
-    var select = document.createElement('select');
-    select.className = 'select-input';
-
-    var emptyOption = document.createElement('option');
-    emptyOption.value = '';
-    emptyOption.textContent = '';
-    select.appendChild(emptyOption);
-
-    for (var i = field.min; i <= field.max; i += field.step) {
-      var option = document.createElement('option');
-      option.value = String(i);
-      option.textContent = String(i);
-      select.appendChild(option);
-    }
+    var input = document.createElement('input');
+    var seededDefaultPending = false;
+    input.type = 'number';
+    input.className = 'metric-input';
+    input.min = String(field.min);
+    input.max = String(field.max);
+    input.step = String(field.step || 1);
+    input.inputMode = 'numeric';
 
     if (value !== undefined && value !== null && value !== '') {
-      select.value = String(value);
+      input.value = String(value);
     }
 
-    function applyDefaultIfNeeded() {
-      if (select.value !== '') {
-        return;
+    function applyDefaultIfNeeded(rerender) {
+      if (input.value !== '') {
+        return false;
       }
-      select.value = String(field.defaultValue);
-      persistField(dateKey, month, fieldKey, field.defaultValue, false);
+      input.value = String(field.defaultValue);
+      var changed = persistField(dateKey, month, fieldKey, field.defaultValue, rerender);
+      seededDefaultPending = !rerender && changed;
+      return true;
     }
 
     function onTouched() {
       rememberTouched(month, fieldKey, wrapper, cell);
-      applyDefaultIfNeeded();
+      var shouldAutoReturn = Boolean(AUTO_RETURN_DEFAULT_FIELDS[fieldKey]);
+      var seeded = applyDefaultIfNeeded(shouldAutoReturn);
+      if (seeded && shouldAutoReturn) {
+        input.blur();
+      }
     }
 
-    select.addEventListener('focus', onTouched);
-    select.addEventListener('pointerdown', onTouched);
+    function commitCurrentValue() {
+      if (!input.value) {
+        var clearedChanged = persistField(dateKey, month, fieldKey, null, true);
+        if (!clearedChanged && seededDefaultPending) {
+          rerenderMonthSection(month);
+        }
+        seededDefaultPending = false;
+        return;
+      }
 
-    select.addEventListener('change', function () {
-      var parsed = Number(select.value);
-      persistField(dateKey, month, fieldKey, Number.isFinite(parsed) ? parsed : null, true);
+      var parsed = Number(input.value);
+      if (!Number.isFinite(parsed)) {
+        var invalidChanged = persistField(dateKey, month, fieldKey, null, true);
+        if (!invalidChanged && seededDefaultPending) {
+          rerenderMonthSection(month);
+        }
+        seededDefaultPending = false;
+        return;
+      }
+
+      var clamped = Math.min(field.max, Math.max(field.min, parsed));
+      if ((field.step || 1) === 1) {
+        clamped = Math.round(clamped);
+      }
+      input.value = String(clamped);
+      var committedChanged = persistField(dateKey, month, fieldKey, clamped, true);
+      if (!committedChanged && seededDefaultPending) {
+        rerenderMonthSection(month);
+      }
+      seededDefaultPending = false;
+    }
+
+    input.addEventListener('focus', onTouched);
+    input.addEventListener('change', commitCurrentValue);
+    input.addEventListener('blur', commitCurrentValue);
+
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        input.blur();
+      }
     });
 
-    return select;
+    return input;
   }
 
   function createCheckInput(fieldKey, checked, dateKey, month, wrapper, cell) {
@@ -596,6 +636,7 @@
   function persistField(dateKey, month, fieldKey, value, rerender) {
     var yearState = C.ensureYearState(state, selectedYear);
     var entries = yearState.entries;
+    var beforeSnapshot = entries[dateKey] ? JSON.stringify(entries[dateKey]) : '';
     var current = entries[dateKey] ? Object.assign({}, entries[dateKey]) : {};
     var field = C.FIELDS[fieldKey] || null;
 
@@ -621,11 +662,17 @@
       entries[dateKey] = current;
     }
 
+    var afterSnapshot = entries[dateKey] ? JSON.stringify(entries[dateKey]) : '';
+    if (beforeSnapshot === afterSnapshot) {
+      return false;
+    }
+
     C.saveState(state);
 
     if (rerender !== false) {
       rerenderAffectedMonths(month, dateKey, fieldKey);
     }
+    return true;
   }
 
   function rerenderAffectedMonths(month, dateKey, fieldKey) {
@@ -693,7 +740,7 @@
     }
     var height = topHeader.offsetHeight;
     document.documentElement.style.setProperty('--header-height', height + 'px');
-    document.documentElement.style.setProperty('--table-sticky-top', height + 8 + 'px');
+    document.documentElement.style.setProperty('--table-sticky-top', height + 'px');
   }
 
   async function refreshToLatest() {
