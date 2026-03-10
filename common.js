@@ -239,6 +239,16 @@
     return hour + ':' + pad2(minute);
   }
 
+  function formatDurationHM(totalMinutes) {
+    if (typeof totalMinutes !== 'number' || Number.isNaN(totalMinutes)) {
+      return '-';
+    }
+    var rounded = Math.round(totalMinutes);
+    var hour = Math.floor(rounded / 60);
+    var minute = rounded % 60;
+    return hour + 'h' + pad2(minute) + 'm';
+  }
+
   function formatNumber(value, fractionDigits) {
     if (typeof value !== 'number' || Number.isNaN(value)) {
       return '-';
@@ -627,6 +637,22 @@
     return '#f5b8b8';
   }
 
+  function blendHexColor(fromHex, toHex, ratio) {
+    var clamped = Math.max(0, Math.min(1, ratio));
+    var fromR = parseInt(fromHex.slice(1, 3), 16);
+    var fromG = parseInt(fromHex.slice(3, 5), 16);
+    var fromB = parseInt(fromHex.slice(5, 7), 16);
+    var toR = parseInt(toHex.slice(1, 3), 16);
+    var toG = parseInt(toHex.slice(3, 5), 16);
+    var toB = parseInt(toHex.slice(5, 7), 16);
+
+    var r = Math.round(fromR + (toR - fromR) * clamped);
+    var g = Math.round(fromG + (toG - fromG) * clamped);
+    var b = Math.round(fromB + (toB - fromB) * clamped);
+
+    return '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
+  }
+
   function getBedColor(minutes) {
     if (minutes === null) {
       return '';
@@ -634,11 +660,13 @@
 
     var normalized = minutes < 720 ? minutes + 1440 : minutes;
 
-    if (normalized <= 1320) return '#cbe2ff';
-    if (normalized <= 1380) return '#d8d0ff';
-    if (normalized <= 1440) return '#e8d3ff';
-    if (normalized <= 1500) return '#ffdcbc';
-    return '#f7b7b7';
+    if (normalized <= 1260) return '#cbe2ff';
+    if (normalized <= 1320) return blendHexColor('#cbe2ff', '#d8d0ff', (normalized - 1260) / 60);
+    if (normalized <= 1380) return blendHexColor('#d8d0ff', '#ffe88a', (normalized - 1320) / 60);
+    if (normalized <= 1410) return blendHexColor('#ffe88a', '#ffb25f', (normalized - 1380) / 30);
+    if (normalized <= 1440) return blendHexColor('#ffb25f', '#f05b5b', (normalized - 1410) / 30);
+    if (normalized <= 1470) return blendHexColor('#f05b5b', '#dc495f', (normalized - 1440) / 30);
+    return '#dc495f';
   }
 
   function getSleepColor(durationMinutes) {
@@ -678,6 +706,7 @@
     parseTimeToMinutes: parseTimeToMinutes,
     formatMinutesToClock: formatMinutesToClock,
     formatDuration: formatDuration,
+    formatDurationHM: formatDurationHM,
     formatNumber: formatNumber,
     formatPercent: formatPercent,
     toNumberOrNull: toNumberOrNull,
@@ -695,3 +724,4 @@
     getSleepColor: getSleepColor
   };
 })();
+

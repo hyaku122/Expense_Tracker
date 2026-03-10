@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260308-4';
+  var ASSET_VERSION = '20260310-1';
 
   var summaryHeader = document.getElementById('summaryHeader');
   var summaryTitle = document.getElementById('summaryTitle');
@@ -160,19 +160,19 @@
 
     [
       '月',
-      '起床平均',
-      '就寝平均',
-      '睡眠平均',
-      '朝瞑想合計',
-      'ヨガ%',
-      '朝階段%',
-      'メルカリ合計',
-      'パレオ合計',
-      '散歩合計',
-      '夜階段%',
-      '読書合計',
-      '瞑想♨合計',
-      '体重(月末)'
+      '起床',
+      '就寝',
+      '睡眠時間',
+      '朝瞑想',
+      'ヨガ',
+      '朝階段',
+      'メルカリ',
+      'パレオ',
+      '散歩',
+      '夜階段',
+      '読書',
+      '瞑想♨',
+      '体重'
     ].forEach(function (label, index) {
       var th = document.createElement('th');
       th.textContent = label;
@@ -195,15 +195,15 @@
         C.formatMinutesToClock(stats.wakeAvg),
         C.formatMinutesToClock(stats.bedAvg),
         C.formatDuration(stats.sleepAvg),
-        String(Math.round(stats.totals.morningMeditation)),
+        C.formatDurationHM(stats.totals.morningMeditation),
         C.formatPercent(stats.checkRates.yoga),
         C.formatPercent(stats.checkRates.morningStairs),
         String(Math.round(stats.totals.mercari)),
         String(Math.round(stats.totals.paleo)),
-        String(Math.round(stats.totals.walk)),
+        C.formatDurationHM(stats.totals.walk),
         C.formatPercent(stats.checkRates.nightStairs),
-        String(Math.round(stats.totals.reading)),
-        String(Math.round(stats.totals.bathMeditation)),
+        C.formatDurationHM(stats.totals.reading),
+        C.formatDurationHM(stats.totals.bathMeditation),
         stats.monthEndWeight === null ? '-' : C.formatNumber(stats.monthEndWeight, 1)
       ];
 
@@ -328,3 +328,4 @@
     });
   }
 })();
+

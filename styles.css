@@ -451,9 +451,6 @@ body {
 }
 
 .year-summary-table thead th {
-  position: sticky;
-  top: var(--summary-sticky-top);
-  z-index: 30;
   background: #d4e8c6;
   color: #243943;
 }
@@ -576,3 +573,4 @@ body {
     height: 36px;
   }
 }
+
