@@ -662,10 +662,10 @@
 
     if (normalized <= 1260) return '#cbe2ff';
     if (normalized <= 1320) return blendHexColor('#cbe2ff', '#b8a4ff', (normalized - 1260) / 60);
-    if (normalized <= 1380) return blendHexColor('#b8a4ff', '#ffe88a', (normalized - 1320) / 60);
-    if (normalized <= 1410) return blendHexColor('#ffe88a', '#ffb25f', (normalized - 1380) / 30);
-    if (normalized <= 1440) return blendHexColor('#ffb25f', '#f05b5b', (normalized - 1410) / 30);
-    if (normalized <= 1470) return blendHexColor('#f05b5b', '#dc495f', (normalized - 1440) / 30);
+    if (normalized < 1380) return blendHexColor('#b8a4ff', '#c9b8ff', (normalized - 1320) / 60);
+    if (normalized <= 1410) return blendHexColor('#fff2a8', '#ffd487', (normalized - 1380) / 30);
+    if (normalized <= 1440) return blendHexColor('#ffd487', '#ff8a72', (normalized - 1410) / 30);
+    if (normalized <= 1470) return blendHexColor('#ff8a72', '#dc495f', (normalized - 1440) / 30);
     return '#dc495f';
   }
 
@@ -724,5 +724,6 @@
     getSleepColor: getSleepColor
   };
 })();
+
 
 

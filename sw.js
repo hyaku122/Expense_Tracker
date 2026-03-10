@@ -1,15 +1,15 @@
 ﻿const CACHE_PREFIX = 'mindful-life-log-cache';
-const CACHE_VERSION = '20260310-v1';
+const CACHE_VERSION = '20260310-v2';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   './',
   './index.html',
   './summary.html',
-  './styles.css?v=20260310-1',
-  './common.js?v=20260310-1',
-  './app.js?v=20260310-1',
-  './summary.js?v=20260310-1',
+  './styles.css?v=20260310-2',
+  './common.js?v=20260310-2',
+  './app.js?v=20260310-2',
+  './summary.js?v=20260310-2',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -85,4 +85,5 @@ async function cacheFirst(request) {
   cache.put(request, response.clone());
   return response;
 }
+
 

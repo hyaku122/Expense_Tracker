@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260310-1';
+  var ASSET_VERSION = '20260310-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -910,4 +910,5 @@
     });
   }
 })();
+
 
