@@ -661,8 +661,8 @@
     var normalized = minutes < 720 ? minutes + 1440 : minutes;
 
     if (normalized <= 1260) return '#cbe2ff';
-    if (normalized <= 1320) return blendHexColor('#cbe2ff', '#d8d0ff', (normalized - 1260) / 60);
-    if (normalized <= 1380) return blendHexColor('#d8d0ff', '#ffe88a', (normalized - 1320) / 60);
+    if (normalized <= 1320) return blendHexColor('#cbe2ff', '#b8a4ff', (normalized - 1260) / 60);
+    if (normalized <= 1380) return blendHexColor('#b8a4ff', '#ffe88a', (normalized - 1320) / 60);
     if (normalized <= 1410) return blendHexColor('#ffe88a', '#ffb25f', (normalized - 1380) / 30);
     if (normalized <= 1440) return blendHexColor('#ffb25f', '#f05b5b', (normalized - 1410) / 30);
     if (normalized <= 1470) return blendHexColor('#f05b5b', '#dc495f', (normalized - 1440) / 30);
@@ -724,4 +724,5 @@
     getSleepColor: getSleepColor
   };
 })();
+
 
