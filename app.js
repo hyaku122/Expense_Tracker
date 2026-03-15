@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-1';
+  var ASSET_VERSION = '20260315-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -567,15 +567,18 @@
 
     var emptyOption = document.createElement('option');
     emptyOption.value = '';
-    emptyOption.textContent = '';
+    emptyOption.textContent = 'リセット';
     select.appendChild(emptyOption);
 
-    var resetOption = document.createElement('option');
-    resetOption.value = '__reset__';
-    resetOption.textContent = '×';
-    select.appendChild(resetOption);
+    var missOption = document.createElement('option');
+    missOption.value = '0';
+    missOption.textContent = '×';
+    select.appendChild(missOption);
 
     for (var i = field.min; i <= field.max; i += field.step) {
+      if (i === 0) {
+        continue;
+      }
       var option = document.createElement('option');
       option.value = String(i);
       option.textContent = String(i);
@@ -628,7 +631,7 @@
     });
 
     select.addEventListener('change', function () {
-      if (!select.value || select.value === '__reset__') {
+      if (!select.value) {
         seededDefaultPending = false;
         persistField(dateKey, month, fieldKey, null, true);
         return;
@@ -690,7 +693,7 @@
     }
 
     var currentValue = select.value;
-    select.length = 2;
+    select.length = 1;
 
     for (var tenths = C.FIELDS.weight.min * 10; tenths <= C.FIELDS.weight.max * 10; tenths += 1) {
       var formatted = formatWeightOptionValue(tenths / 10);
@@ -701,7 +704,7 @@
     }
 
     select.dataset.optionsReady = 'true';
-    if (currentValue && currentValue !== '__reset__') {
+    if (currentValue) {
       select.value = currentValue;
     }
   }
@@ -713,13 +716,8 @@
 
     var emptyOption = document.createElement('option');
     emptyOption.value = '';
-    emptyOption.textContent = '';
+    emptyOption.textContent = 'リセット';
     select.appendChild(emptyOption);
-
-    var resetOption = document.createElement('option');
-    resetOption.value = '__reset__';
-    resetOption.textContent = '×';
-    select.appendChild(resetOption);
 
     if (value !== undefined && value !== null && value !== '') {
       var currentOption = document.createElement('option');
@@ -758,7 +756,7 @@
     });
 
     select.addEventListener('change', function () {
-      if (!select.value || select.value === '__reset__') {
+      if (!select.value) {
         seededDefaultPending = false;
         persistField(dateKey, month, 'weight', null, true);
         return;
