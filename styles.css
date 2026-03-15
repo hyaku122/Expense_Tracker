@@ -560,6 +560,11 @@ body {
   background: rgba(255, 255, 255, 0.42);
 }
 
+.month-table tbody td[data-column="wakeTime"] .time-input,
+.month-table tbody td[data-column="bedTime"] .time-input {
+  background: rgba(255, 255, 255, 0.42);
+}
+
 .sleep-cell {
   font-weight: 700;
 }
