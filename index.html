@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="icon" href="icons/icon-192.png" type="image/png">
-  <link rel="stylesheet" href="styles.css?v=20260315-2">
+  <link rel="stylesheet" href="styles.css?v=20260315-3">
 </head>
 <body>
   <div class="app-shell">
@@ -64,8 +64,23 @@
     </div>
   </div>
 
-  <script src="common.js?v=20260315-2"></script>
-  <script src="app.js?v=20260315-2"></script>
+  <div id="weightPickerModal" class="modal picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="weightPickerTitle">
+    <div class="picker-sheet">
+      <div class="picker-head">
+        <h2 id="weightPickerTitle">体重</h2>
+        <p class="picker-range">50.0kg - 80.0kg</p>
+      </div>
+      <p id="weightPickerValue" class="picker-value">50.0</p>
+      <div id="weightPickerList" class="weight-picker-list" role="listbox" aria-label="体重選択"></div>
+      <div class="picker-actions">
+        <button id="resetWeightPickerButton" class="picker-action picker-reset" type="button">リセット</button>
+        <button id="doneWeightPickerButton" class="picker-action picker-done" type="button">完了</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="common.js?v=20260315-3"></script>
+  <script src="app.js?v=20260315-3"></script>
 </body>
 </html>
 

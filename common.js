@@ -72,8 +72,8 @@
       key: 'weight',
       label: '体重',
       kind: 'number',
-      min: 20,
-      max: 200,
+      min: 50,
+      max: 80,
       step: 0.1
     }
   };

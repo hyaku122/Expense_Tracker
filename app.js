@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-2';
+  var ASSET_VERSION = '20260315-3';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -68,6 +68,11 @@
   var backupOutput = document.getElementById('backupOutput');
   var restoreInput = document.getElementById('restoreInput');
   var restoreButton = document.getElementById('restoreButton');
+  var weightPickerModal = document.getElementById('weightPickerModal');
+  var weightPickerValue = document.getElementById('weightPickerValue');
+  var weightPickerList = document.getElementById('weightPickerList');
+  var resetWeightPickerButton = document.getElementById('resetWeightPickerButton');
+  var doneWeightPickerButton = document.getElementById('doneWeightPickerButton');
 
   var now = new Date();
   var urlYear = parseInt(new URLSearchParams(window.location.search).get('year'), 10);
@@ -77,6 +82,7 @@
   var selectedYear = sanitizeYear(Number.isFinite(urlYear) ? urlYear : initialState.selectedYear || now.getFullYear());
   var activeMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 1;
   var saveTimer = null;
+  var weightPickerState = null;
 
   init();
 
@@ -84,6 +90,7 @@
     applyStickyColumnVars();
     bindGlobalEvents();
     bindSettingsEvents();
+    bindWeightPickerEvents();
     registerServiceWorker();
     renderAll();
 
@@ -195,6 +202,48 @@
       } catch (error) {
         alert(error.message || '復元に失敗しました。');
       }
+    });
+  }
+
+  function bindWeightPickerEvents() {
+    if (!weightPickerModal) {
+      return;
+    }
+
+    weightPickerModal.addEventListener('click', function (event) {
+      if (event.target === weightPickerModal) {
+        closeWeightPicker();
+      }
+    });
+
+    weightPickerList.addEventListener('click', function (event) {
+      var option = event.target.closest('.weight-picker-option');
+      if (!option || !weightPickerState) {
+        return;
+      }
+      weightPickerState.selectedValue = Number(option.dataset.value);
+      updateWeightPickerView();
+    });
+
+    resetWeightPickerButton.addEventListener('click', function () {
+      if (!weightPickerState) {
+        return;
+      }
+      var dateKey = weightPickerState.dateKey;
+      var month = weightPickerState.month;
+      closeWeightPicker();
+      persistField(dateKey, month, 'weight', null, true);
+    });
+
+    doneWeightPickerButton.addEventListener('click', function () {
+      if (!weightPickerState) {
+        return;
+      }
+      var dateKey = weightPickerState.dateKey;
+      var month = weightPickerState.month;
+      var selectedValue = weightPickerState.selectedValue;
+      closeWeightPicker();
+      persistField(dateKey, month, 'weight', selectedValue, true);
     });
   }
 
@@ -679,6 +728,17 @@
     return Number(value).toFixed(1);
   }
 
+  function clampWeightValue(value) {
+    var numeric = C.toNumberOrNull(value);
+    if (numeric === null) {
+      return null;
+    }
+    var min = C.FIELDS.weight.min;
+    var max = C.FIELDS.weight.max;
+    var rounded = Math.round(numeric * 10) / 10;
+    return Math.max(min, Math.min(max, rounded));
+  }
+
   function getPreviousWeightValue(dateKey) {
     var previousDateKey = C.shiftDateKey(dateKey, -1);
     var parsed = C.parseDateKey(previousDateKey);
@@ -687,94 +747,109 @@
     return previousEntry ? C.toNumberOrNull(previousEntry.weight) : null;
   }
 
-  function populateWeightOptions(select) {
-    if (select.dataset.optionsReady === 'true') {
+  function ensureWeightPickerOptions() {
+    if (!weightPickerList || weightPickerList.dataset.optionsReady === 'true') {
+      return;
+    }
+    for (var tenths = C.FIELDS.weight.min * 10; tenths <= C.FIELDS.weight.max * 10; tenths += 1) {
+      var formatted = formatWeightOptionValue(tenths / 10);
+      var option = document.createElement('button');
+      option.type = 'button';
+      option.className = 'weight-picker-option';
+      option.dataset.value = formatted;
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', 'false');
+      option.textContent = formatted;
+      weightPickerList.appendChild(option);
+    }
+    weightPickerList.dataset.optionsReady = 'true';
+  }
+
+  function updateWeightPickerView() {
+    if (!weightPickerState || !weightPickerList || !weightPickerValue) {
+      return;
+    }
+    var activeValue = formatWeightOptionValue(weightPickerState.selectedValue);
+    weightPickerValue.textContent = activeValue;
+
+    Array.prototype.forEach.call(weightPickerList.children, function (option) {
+      var isActive = option.dataset.value === activeValue;
+      option.classList.toggle('active', isActive);
+      option.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  }
+
+  function scrollWeightPickerToSelection() {
+    if (!weightPickerList) {
+      return;
+    }
+    var activeOption = weightPickerList.querySelector('.weight-picker-option.active');
+    if (!activeOption) {
+      return;
+    }
+    activeOption.scrollIntoView({ block: 'center' });
+  }
+
+  function openWeightPicker(value, dateKey, month, wrapper, cell) {
+    if (!weightPickerModal) {
       return;
     }
 
-    var currentValue = select.value;
-    select.length = 1;
+    rememberTouched(month, 'weight', wrapper, cell);
+    ensureWeightPickerOptions();
 
-    for (var tenths = C.FIELDS.weight.min * 10; tenths <= C.FIELDS.weight.max * 10; tenths += 1) {
-      var formatted = formatWeightOptionValue(tenths / 10);
-      var option = document.createElement('option');
-      option.value = formatted;
-      option.textContent = formatted;
-      select.appendChild(option);
+    var selectedValue = clampWeightValue(value);
+    if (selectedValue === null) {
+      var previousWeight = clampWeightValue(getPreviousWeightValue(dateKey));
+      if (previousWeight !== null) {
+        selectedValue = previousWeight;
+        persistField(dateKey, month, 'weight', selectedValue, true);
+      }
     }
 
-    select.dataset.optionsReady = 'true';
-    if (currentValue) {
-      select.value = currentValue;
+    if (selectedValue === null) {
+      selectedValue = C.FIELDS.weight.min;
     }
+
+    weightPickerState = {
+      dateKey: dateKey,
+      month: month,
+      selectedValue: selectedValue
+    };
+
+    updateWeightPickerView();
+    weightPickerModal.classList.remove('hidden');
+    requestAnimationFrame(function () {
+      scrollWeightPickerToSelection();
+    });
+  }
+
+  function closeWeightPicker() {
+    if (!weightPickerModal) {
+      return;
+    }
+    weightPickerModal.classList.add('hidden');
+    weightPickerState = null;
   }
 
   function createWeightInput(value, dateKey, month, wrapper, cell) {
-    var select = document.createElement('select');
-    var seededDefaultPending = false;
-    select.className = 'select-input weight-select-input';
+    var button = document.createElement('button');
+    var numericValue = C.toNumberOrNull(value);
+    button.type = 'button';
+    button.className = 'select-input weight-picker-trigger';
 
-    var emptyOption = document.createElement('option');
-    emptyOption.value = '';
-    emptyOption.textContent = 'リセット';
-    select.appendChild(emptyOption);
-
-    if (value !== undefined && value !== null && value !== '') {
-      var currentOption = document.createElement('option');
-      currentOption.value = formatWeightOptionValue(value);
-      currentOption.textContent = formatWeightOptionValue(value);
-      select.appendChild(currentOption);
-      select.value = currentOption.value;
+    if (numericValue === null) {
+      button.classList.add('is-empty');
+      button.innerHTML = '&nbsp;';
+    } else {
+      button.textContent = formatWeightOptionValue(numericValue);
     }
 
-    function applyDefaultIfNeeded() {
-      if (select.value !== '') {
-        return false;
-      }
-      var previousWeight = getPreviousWeightValue(dateKey);
-      if (previousWeight === null) {
-        return false;
-      }
-      populateWeightOptions(select);
-      select.value = formatWeightOptionValue(previousWeight);
-      seededDefaultPending = persistField(dateKey, month, 'weight', previousWeight, false);
-      return true;
-    }
-
-    function handleFirstTap() {
-      rememberTouched(month, 'weight', wrapper, cell);
-      populateWeightOptions(select);
-      applyDefaultIfNeeded();
-    }
-
-    select.addEventListener('pointerdown', function () {
-      handleFirstTap();
+    button.addEventListener('click', function () {
+      openWeightPicker(numericValue, dateKey, month, wrapper, cell);
     });
 
-    select.addEventListener('focus', function () {
-      handleFirstTap();
-    });
-
-    select.addEventListener('change', function () {
-      if (!select.value) {
-        seededDefaultPending = false;
-        persistField(dateKey, month, 'weight', null, true);
-        return;
-      }
-      var parsed = Number(select.value);
-      seededDefaultPending = false;
-      persistField(dateKey, month, 'weight', Number.isFinite(parsed) ? parsed : null, true);
-    });
-
-    select.addEventListener('blur', function () {
-      if (!seededDefaultPending) {
-        return;
-      }
-      seededDefaultPending = false;
-      rerenderMonthSection(month);
-    });
-
-    return select;
+    return button;
   }
 
   function applyCheckCellStyle(cell, fieldKey, checked) {
