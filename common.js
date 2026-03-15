@@ -632,9 +632,10 @@
     }
     if (minutes <= 330) return '#8ec9ff';
     if (minutes <= 390) return '#9aeaf3';
-    if (minutes <= 450) return '#bcf7ff';
-    if (minutes <= 510) return '#f6d6e7';
-    return '#f5b8b8';
+    if (minutes < 420) return '#bcf7ff';
+    if (minutes <= 450) return blendHexColor('#fff1a8', '#ffb067', (minutes - 420) / 30);
+    if (minutes <= 480) return blendHexColor('#ffb067', '#ef7860', (minutes - 450) / 30);
+    return '#ef7860';
   }
 
   function blendHexColor(fromHex, toHex, ratio) {

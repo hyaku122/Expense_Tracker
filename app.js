@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260310-2';
+  var ASSET_VERSION = '20260315-1';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -357,15 +357,15 @@
       wakeTime: C.formatMinutesToClock(stats.wakeAvg),
       bedTime: C.formatMinutesToClock(stats.bedAvg),
       sleepDuration: C.formatDuration(stats.sleepAvg),
-      morningMeditation: String(Math.round(stats.totals.morningMeditation)),
+      morningMeditation: C.formatDurationHM(stats.totals.morningMeditation),
       yoga: C.formatPercent(stats.checkRates.yoga),
       morningStairs: C.formatPercent(stats.checkRates.morningStairs),
       mercari: String(Math.round(stats.totals.mercari)),
       paleo: String(Math.round(stats.totals.paleo)),
-      walk: String(Math.round(stats.totals.walk)),
+      walk: C.formatDurationHM(stats.totals.walk),
       nightStairs: C.formatPercent(stats.checkRates.nightStairs),
-      reading: String(Math.round(stats.totals.reading)),
-      bathMeditation: String(Math.round(stats.totals.bathMeditation)),
+      reading: C.formatDurationHM(stats.totals.reading),
+      bathMeditation: C.formatDurationHM(stats.totals.bathMeditation),
       weight: stats.monthEndWeight === null ? '-' : C.formatNumber(stats.monthEndWeight, 1)
     };
   }
@@ -570,6 +570,11 @@
     emptyOption.textContent = '';
     select.appendChild(emptyOption);
 
+    var resetOption = document.createElement('option');
+    resetOption.value = '__reset__';
+    resetOption.textContent = '×';
+    select.appendChild(resetOption);
+
     for (var i = field.min; i <= field.max; i += field.step) {
       var option = document.createElement('option');
       option.value = String(i);
@@ -623,6 +628,11 @@
     });
 
     select.addEventListener('change', function () {
+      if (!select.value || select.value === '__reset__') {
+        seededDefaultPending = false;
+        persistField(dateKey, month, fieldKey, null, true);
+        return;
+      }
       var parsed = Number(select.value);
       seededDefaultPending = false;
       persistField(dateKey, month, fieldKey, Number.isFinite(parsed) ? parsed : null, true);
@@ -662,30 +672,111 @@
     return input;
   }
 
-  function createWeightInput(value, dateKey, month, wrapper, cell) {
-    var input = document.createElement('input');
-    input.type = 'number';
-    input.className = 'weight-input';
-    input.step = '0.1';
-    input.min = String(C.FIELDS.weight.min);
-    input.max = String(C.FIELDS.weight.max);
-    input.inputMode = 'decimal';
-    input.value = value === undefined || value === null ? '' : String(value);
+  function formatWeightOptionValue(value) {
+    return Number(value).toFixed(1);
+  }
 
-    input.addEventListener('focus', function () {
+  function getPreviousWeightValue(dateKey) {
+    var previousDateKey = C.shiftDateKey(dateKey, -1);
+    var parsed = C.parseDateKey(previousDateKey);
+    var previousEntries = C.getEntriesForYear(state, parsed.year);
+    var previousEntry = previousEntries[previousDateKey] || null;
+    return previousEntry ? C.toNumberOrNull(previousEntry.weight) : null;
+  }
+
+  function populateWeightOptions(select) {
+    if (select.dataset.optionsReady === 'true') {
+      return;
+    }
+
+    var currentValue = select.value;
+    select.length = 2;
+
+    for (var tenths = C.FIELDS.weight.min * 10; tenths <= C.FIELDS.weight.max * 10; tenths += 1) {
+      var formatted = formatWeightOptionValue(tenths / 10);
+      var option = document.createElement('option');
+      option.value = formatted;
+      option.textContent = formatted;
+      select.appendChild(option);
+    }
+
+    select.dataset.optionsReady = 'true';
+    if (currentValue && currentValue !== '__reset__') {
+      select.value = currentValue;
+    }
+  }
+
+  function createWeightInput(value, dateKey, month, wrapper, cell) {
+    var select = document.createElement('select');
+    var seededDefaultPending = false;
+    select.className = 'select-input weight-select-input';
+
+    var emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = '';
+    select.appendChild(emptyOption);
+
+    var resetOption = document.createElement('option');
+    resetOption.value = '__reset__';
+    resetOption.textContent = '×';
+    select.appendChild(resetOption);
+
+    if (value !== undefined && value !== null && value !== '') {
+      var currentOption = document.createElement('option');
+      currentOption.value = formatWeightOptionValue(value);
+      currentOption.textContent = formatWeightOptionValue(value);
+      select.appendChild(currentOption);
+      select.value = currentOption.value;
+    }
+
+    function applyDefaultIfNeeded() {
+      if (select.value !== '') {
+        return false;
+      }
+      var previousWeight = getPreviousWeightValue(dateKey);
+      if (previousWeight === null) {
+        return false;
+      }
+      populateWeightOptions(select);
+      select.value = formatWeightOptionValue(previousWeight);
+      seededDefaultPending = persistField(dateKey, month, 'weight', previousWeight, false);
+      return true;
+    }
+
+    function handleFirstTap() {
       rememberTouched(month, 'weight', wrapper, cell);
+      populateWeightOptions(select);
+      applyDefaultIfNeeded();
+    }
+
+    select.addEventListener('pointerdown', function () {
+      handleFirstTap();
     });
 
-    input.addEventListener('change', function () {
-      if (!input.value) {
+    select.addEventListener('focus', function () {
+      handleFirstTap();
+    });
+
+    select.addEventListener('change', function () {
+      if (!select.value || select.value === '__reset__') {
+        seededDefaultPending = false;
         persistField(dateKey, month, 'weight', null, true);
         return;
       }
-      var parsed = Number(input.value);
+      var parsed = Number(select.value);
+      seededDefaultPending = false;
       persistField(dateKey, month, 'weight', Number.isFinite(parsed) ? parsed : null, true);
     });
 
-    return input;
+    select.addEventListener('blur', function () {
+      if (!seededDefaultPending) {
+        return;
+      }
+      seededDefaultPending = false;
+      rerenderMonthSection(month);
+    });
+
+    return select;
   }
 
   function applyCheckCellStyle(cell, fieldKey, checked) {
@@ -709,17 +800,6 @@
   function rememberTouched(month, fieldKey, wrapper, cell) {
     var yearState = C.ensureYearState(state, selectedYear);
     yearState.ui.lastTouchedColumn[String(month)] = fieldKey;
-
-    var table = cell.closest('.month-table');
-    var tableStickyWidth = table ? parseInt(getComputedStyle(table).getPropertyValue('--table-sticky-left-width'), 10) : NaN;
-    var stickyWidth = Number.isFinite(tableStickyWidth) && tableStickyWidth > 0
-      ? tableStickyWidth
-      : (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sticky-left-width'), 10) || 122);
-    var target = Math.max(0, cell.offsetLeft - stickyWidth - 4);
-
-    wrapper.scrollTo({ left: target, behavior: 'smooth' });
-
-    yearState.ui.monthScroll[String(month)] = Math.round(target);
     scheduleSave();
   }
 
