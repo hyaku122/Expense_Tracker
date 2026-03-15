@@ -304,7 +304,7 @@ body {
 }
 
 .month-table tbody td.input-cell {
-  padding: 0;
+  padding: 2px;
 }
 
 .month-table .aggregate-row .sticky-col-1,
@@ -391,6 +391,17 @@ body {
   padding-right: 4px;
 }
 
+.compact-select-input {
+  width: 50%;
+  min-width: 34px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0;
+  text-align: center;
+  text-align-last: center;
+}
+
 .weight-picker-trigger {
   appearance: none;
   -webkit-appearance: none;
@@ -435,7 +446,6 @@ body {
 }
 
 .check-cell {
-  padding: 0;
   background: #f5f7fa;
 }
 

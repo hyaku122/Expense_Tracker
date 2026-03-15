@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-5';
+  var ASSET_VERSION = '20260315-6';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -639,6 +639,15 @@
     return field && field.kind === 'check';
   }
 
+  function isCompactSelectField(fieldKey) {
+    return fieldKey === 'morningMeditation' ||
+      fieldKey === 'mercari' ||
+      fieldKey === 'paleo' ||
+      fieldKey === 'walk' ||
+      fieldKey === 'reading' ||
+      fieldKey === 'bathMeditation';
+  }
+
   function createTimeInput(fieldKey, value, dateKey, month, wrapper, cell) {
     var input = document.createElement('input');
     input.type = 'time';
@@ -661,7 +670,7 @@
     var field = C.FIELDS[fieldKey];
     var select = document.createElement('select');
     var seededDefaultPending = false;
-    select.className = 'select-input';
+    select.className = 'select-input' + (isCompactSelectField(fieldKey) ? ' compact-select-input' : '');
 
     var emptyOption = document.createElement('option');
     emptyOption.value = '';
