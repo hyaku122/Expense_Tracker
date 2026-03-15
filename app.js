@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-4';
+  var ASSET_VERSION = '20260315-5';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -35,15 +35,15 @@
     wakeTime: 64,
     bedTime: 64,
     sleepDuration: 73,
-    morningMeditation: 62,
-    yoga: 46,
-    morningStairs: 59,
+    morningMeditation: 70,
+    yoga: 64,
+    morningStairs: 68,
     mercari: 74,
     paleo: 57,
-    walk: 46,
-    nightStairs: 59,
-    reading: 44,
-    bathMeditation: 58,
+    walk: 70,
+    nightStairs: 68,
+    reading: 70,
+    bathMeditation: 72,
     weight: 86,
     note: 52
   };
