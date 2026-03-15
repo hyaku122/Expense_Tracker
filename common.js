@@ -75,6 +75,11 @@
       min: 50,
       max: 80,
       step: 0.1
+    },
+    note: {
+      key: 'note',
+      label: '備考',
+      kind: 'text'
     }
   };
 

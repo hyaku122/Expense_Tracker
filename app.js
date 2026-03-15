@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-3';
+  var ASSET_VERSION = '20260315-4';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -26,7 +26,8 @@
     { key: 'nightStairs', label: '夜階段' },
     { key: 'reading', label: '読書' },
     { key: 'bathMeditation', label: '瞑想♨' },
-    { key: 'weight', label: '体重' }
+    { key: 'weight', label: '体重' },
+    { key: 'note', label: '備考' }
   ];
   var COLUMN_WIDTHS = {
     date: 57,
@@ -43,7 +44,8 @@
     nightStairs: 59,
     reading: 44,
     bathMeditation: 58,
-    weight: 86
+    weight: 86,
+    note: 52
   };
   var AUTO_CLOSE_DEFAULT_FIELDS = {
     morningMeditation: true,
@@ -73,6 +75,10 @@
   var weightPickerList = document.getElementById('weightPickerList');
   var resetWeightPickerButton = document.getElementById('resetWeightPickerButton');
   var doneWeightPickerButton = document.getElementById('doneWeightPickerButton');
+  var noteModal = document.getElementById('noteModal');
+  var noteInput = document.getElementById('noteInput');
+  var resetNoteButton = document.getElementById('resetNoteButton');
+  var doneNoteButton = document.getElementById('doneNoteButton');
 
   var now = new Date();
   var urlYear = parseInt(new URLSearchParams(window.location.search).get('year'), 10);
@@ -83,6 +89,7 @@
   var activeMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 1;
   var saveTimer = null;
   var weightPickerState = null;
+  var noteModalState = null;
 
   init();
 
@@ -91,6 +98,7 @@
     bindGlobalEvents();
     bindSettingsEvents();
     bindWeightPickerEvents();
+    bindNoteModalEvents();
     registerServiceWorker();
     renderAll();
 
@@ -244,6 +252,39 @@
       var selectedValue = weightPickerState.selectedValue;
       closeWeightPicker();
       persistField(dateKey, month, 'weight', selectedValue, true);
+    });
+  }
+
+  function bindNoteModalEvents() {
+    if (!noteModal) {
+      return;
+    }
+
+    noteModal.addEventListener('click', function (event) {
+      if (event.target === noteModal) {
+        closeNoteModal();
+      }
+    });
+
+    resetNoteButton.addEventListener('click', function () {
+      if (!noteModalState) {
+        return;
+      }
+      var dateKey = noteModalState.dateKey;
+      var month = noteModalState.month;
+      closeNoteModal();
+      persistField(dateKey, month, 'note', null, true);
+    });
+
+    doneNoteButton.addEventListener('click', function () {
+      if (!noteModalState) {
+        return;
+      }
+      var dateKey = noteModalState.dateKey;
+      var month = noteModalState.month;
+      var text = noteInput.value.trim();
+      closeNoteModal();
+      persistField(dateKey, month, 'note', text || null, true);
     });
   }
 
@@ -415,7 +456,8 @@
       nightStairs: C.formatPercent(stats.checkRates.nightStairs),
       reading: C.formatDurationHM(stats.totals.reading),
       bathMeditation: C.formatDurationHM(stats.totals.bathMeditation),
-      weight: stats.monthEndWeight === null ? '-' : C.formatNumber(stats.monthEndWeight, 1)
+      weight: stats.monthEndWeight === null ? '-' : C.formatNumber(stats.monthEndWeight, 1),
+      note: '-'
     };
   }
 
@@ -539,6 +581,7 @@
             cell.style.background = sleepColor;
           }
         } else if (column.key === 'wakeTime' || column.key === 'bedTime') {
+          cell.classList.add('input-cell');
           var input = createTimeInput(column.key, entry[column.key] || '', dateKey, month, wrapper, cell);
           cell.appendChild(input);
 
@@ -548,6 +591,7 @@
             cell.style.background = color;
           }
         } else if (isSelectField(column.key)) {
+          cell.classList.add('input-cell');
           var selectInput = createSelectInput(column.key, entry[column.key], dateKey, month, wrapper, cell);
           cell.appendChild(selectInput);
         } else if (isCheckField(column.key)) {
@@ -555,8 +599,13 @@
           cell.appendChild(checkbox);
           applyCheckCellStyle(cell, column.key, Boolean(entry[column.key]));
         } else if (column.key === 'weight') {
+          cell.classList.add('input-cell');
           var weightInput = createWeightInput(entry.weight, dateKey, month, wrapper, cell);
           cell.appendChild(weightInput);
+        } else if (column.key === 'note') {
+          cell.classList.add('input-cell', 'note-cell');
+          var noteButton = createNoteInput(entry.note, dateKey, month, wrapper, cell);
+          cell.appendChild(noteButton);
         }
 
         row.appendChild(cell);
@@ -616,8 +665,14 @@
 
     var emptyOption = document.createElement('option');
     emptyOption.value = '';
-    emptyOption.textContent = 'リセット';
+    emptyOption.textContent = '';
+    emptyOption.hidden = true;
     select.appendChild(emptyOption);
+
+    var resetOption = document.createElement('option');
+    resetOption.value = '__reset__';
+    resetOption.textContent = 'リセット';
+    select.appendChild(resetOption);
 
     var missOption = document.createElement('option');
     missOption.value = '0';
@@ -680,7 +735,7 @@
     });
 
     select.addEventListener('change', function () {
-      if (!select.value) {
+      if (!select.value || select.value === '__reset__') {
         seededDefaultPending = false;
         persistField(dateKey, month, fieldKey, null, true);
         return;
@@ -849,6 +904,44 @@
       openWeightPicker(numericValue, dateKey, month, wrapper, cell);
     });
 
+    return button;
+  }
+
+  function openNoteModal(value, dateKey, month, wrapper, cell) {
+    if (!noteModal || !noteInput) {
+      return;
+    }
+    rememberTouched(month, 'note', wrapper, cell);
+    noteModalState = {
+      dateKey: dateKey,
+      month: month
+    };
+    noteInput.value = typeof value === 'string' ? value : '';
+    noteModal.classList.remove('hidden');
+    requestAnimationFrame(function () {
+      noteInput.focus();
+      noteInput.setSelectionRange(noteInput.value.length, noteInput.value.length);
+    });
+  }
+
+  function closeNoteModal() {
+    if (!noteModal) {
+      return;
+    }
+    noteModal.classList.add('hidden');
+    noteModalState = null;
+  }
+
+  function createNoteInput(value, dateKey, month, wrapper, cell) {
+    var button = document.createElement('button');
+    var hasNote = typeof value === 'string' && value.trim() !== '';
+    button.type = 'button';
+    button.className = 'note-button' + (hasNote ? ' has-note' : '');
+    button.setAttribute('aria-label', hasNote ? '備考あり' : '備考を入力');
+    button.textContent = '✎';
+    button.addEventListener('click', function () {
+      openNoteModal(value, dateKey, month, wrapper, cell);
+    });
     return button;
   }
 

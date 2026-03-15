@@ -303,6 +303,10 @@ body {
   z-index: 1;
 }
 
+.month-table tbody td.input-cell {
+  padding: 2px;
+}
+
 .month-table .aggregate-row .sticky-col-1,
 .month-table .aggregate-row .sticky-col-2 {
   left: var(--table-date-width, var(--date-col-width)) !important;
@@ -395,6 +399,29 @@ body {
 
 .weight-picker-trigger.is-empty {
   color: transparent;
+}
+
+.note-cell {
+  text-align: center;
+}
+
+.note-button {
+  display: inline-grid;
+  place-items: center;
+  width: 100%;
+  min-height: 30px;
+  border: 1px solid #b5c0ca;
+  border-radius: 9px;
+  background: #f7fbff;
+  color: #496077;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.note-button.has-note {
+  background: linear-gradient(145deg, #ffe8a8, #ffd2b6);
+  color: #75432b;
+  border-color: #dfb88f;
 }
 
 .select-input::-ms-expand {
@@ -508,6 +535,10 @@ body {
   background: #fff;
   padding: 14px;
   box-shadow: 0 8px 24px rgba(22, 33, 44, 0.3);
+}
+
+.note-modal-card {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
 }
 
 .modal-head {
