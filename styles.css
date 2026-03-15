@@ -274,6 +274,55 @@ body {
   box-shadow: inset 0 -2px 0 #cfbaa2;
 }
 
+.month-table .column-row th[data-column="wakeTime"] {
+  background: #f8edc9;
+}
+
+.month-table .column-row th[data-column="bedTime"] {
+  background: #ddd1f2;
+}
+
+.month-table .column-row th[data-column="sleepDuration"] {
+  background: #9fd9cf;
+}
+
+.month-table .column-row th[data-column="morningMeditation"] {
+  background: #ccefff;
+}
+
+.month-table .column-row th[data-column="yoga"] {
+  background: #d9f0be;
+}
+
+.month-table .column-row th[data-column="morningStairs"] {
+  background: #ffd7b4;
+}
+
+.month-table .column-row th[data-column="mercari"] {
+  background: #bfe78d;
+}
+
+.month-table .column-row th[data-column="paleo"] {
+  background: #7eb7d9;
+}
+
+.month-table .column-row th[data-column="walk"] {
+  background: #e78d69;
+}
+
+.month-table .column-row th[data-column="nightStairs"] {
+  background: #5876a6;
+  color: #f7fbff;
+}
+
+.month-table .column-row th[data-column="reading"] {
+  background: #ffd9be;
+}
+
+.month-table .column-row th[data-column="bathMeditation"] {
+  background: #8fb3ea;
+}
+
 .month-table .sticky-col-1 {
   position: sticky;
   left: 0;
