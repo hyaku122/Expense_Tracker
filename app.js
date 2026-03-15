@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-7';
+  var ASSET_VERSION = '20260315-8';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -594,6 +594,7 @@
           cell.classList.add('input-cell');
           var selectInput = createSelectInput(column.key, entry[column.key], dateKey, month, wrapper, cell);
           cell.appendChild(selectInput);
+          applyFilledCellStyle(cell, column.key, entry[column.key]);
         } else if (isCheckField(column.key)) {
           var checkbox = createCheckInput(column.key, Boolean(entry[column.key]), dateKey, month, wrapper, cell);
           cell.appendChild(checkbox);
@@ -602,6 +603,7 @@
           cell.classList.add('input-cell');
           var weightInput = createWeightInput(entry.weight, dateKey, month, wrapper, cell);
           cell.appendChild(weightInput);
+          applyWeightCellStyle(cell, entry.weight, dateKey);
         } else if (column.key === 'note') {
           cell.classList.add('input-cell', 'note-cell');
           var noteButton = createNoteInput(entry.note, dateKey, month, wrapper, cell);
@@ -916,6 +918,36 @@
     return button;
   }
 
+  function applyFilledCellStyle(cell, fieldKey, value) {
+    var numericValue = C.toNumberOrNull(value);
+    if (numericValue === null) {
+      return;
+    }
+    cell.classList.add('value-filled', 'filled-' + fieldKey);
+  }
+
+  function applyWeightCellStyle(cell, value, dateKey) {
+    var currentWeight = C.toNumberOrNull(value);
+    if (currentWeight === null) {
+      return;
+    }
+
+    var previousWeight = getPreviousWeightValue(dateKey);
+    if (previousWeight === null) {
+      return;
+    }
+
+    if (currentWeight > previousWeight) {
+      cell.classList.add('weight-up');
+      return;
+    }
+    if (currentWeight < previousWeight) {
+      cell.classList.add('weight-down');
+      return;
+    }
+    cell.classList.add('weight-same');
+  }
+
   function openNoteModal(value, dateKey, month, wrapper, cell) {
     if (!noteModal || !noteInput) {
       return;
@@ -955,20 +987,20 @@
   }
 
   function applyCheckCellStyle(cell, fieldKey, checked) {
-    cell.classList.remove('yoga-on', 'morning-stairs-on', 'night-stairs-on');
+    cell.classList.remove('yoga-on', 'morning-stairs-on', 'night-stairs-on', 'value-filled', 'filled-yoga', 'filled-morningStairs', 'filled-nightStairs');
     if (!checked) {
       return;
     }
     if (fieldKey === 'yoga') {
-      cell.classList.add('yoga-on');
+      cell.classList.add('yoga-on', 'value-filled', 'filled-yoga');
       return;
     }
     if (fieldKey === 'morningStairs') {
-      cell.classList.add('morning-stairs-on');
+      cell.classList.add('morning-stairs-on', 'value-filled', 'filled-morningStairs');
       return;
     }
     if (fieldKey === 'nightStairs') {
-      cell.classList.add('night-stairs-on');
+      cell.classList.add('night-stairs-on', 'value-filled', 'filled-nightStairs');
     }
   }
 

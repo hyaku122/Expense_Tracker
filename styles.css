@@ -507,15 +507,57 @@ body {
 }
 
 .check-cell.yoga-on {
-  background: #ffe6ea;
+  background: #edf8e2;
 }
 
 .check-cell.morning-stairs-on {
-  background: #ffe0df;
+  background: #fff0e2;
 }
 
 .check-cell.night-stairs-on {
-  background: #dae8ff;
+  background: #e3ebf8;
+}
+
+.month-table tbody td.value-filled[data-column="morningMeditation"] {
+  background: #eefaff;
+}
+
+.month-table tbody td.value-filled[data-column="mercari"] {
+  background: #edf8df;
+}
+
+.month-table tbody td.value-filled[data-column="paleo"] {
+  background: #e5f1f8;
+}
+
+.month-table tbody td.value-filled[data-column="walk"] {
+  background: #fae6dc;
+}
+
+.month-table tbody td.value-filled[data-column="reading"] {
+  background: #fff1e7;
+}
+
+.month-table tbody td.value-filled[data-column="bathMeditation"] {
+  background: #e7eefc;
+}
+
+.month-table tbody td.weight-up {
+  background: #ef9a7a;
+}
+
+.month-table tbody td.weight-same {
+  background: #f8edc9;
+}
+
+.month-table tbody td.weight-down {
+  background: #d9f1ff;
+}
+
+.month-table tbody td.weight-up .weight-picker-trigger,
+.month-table tbody td.weight-same .weight-picker-trigger,
+.month-table tbody td.weight-down .weight-picker-trigger {
+  background: rgba(255, 255, 255, 0.42);
 }
 
 .sleep-cell {
