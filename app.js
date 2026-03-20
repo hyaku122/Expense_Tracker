@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260315-9';
+  var ASSET_VERSION = '20260320-1';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -1138,7 +1138,10 @@
         './common.js?v=' + ASSET_VERSION,
         './app.js?v=' + ASSET_VERSION,
         './summary.js?v=' + ASSET_VERSION,
-        './manifest.webmanifest'
+        './manifest.webmanifest?v=' + ASSET_VERSION,
+        './icons/icon-192.png?v=' + ASSET_VERSION,
+        './icons/icon-512.png?v=' + ASSET_VERSION,
+        './icons/apple-touch-icon.png?v=' + ASSET_VERSION
       ];
 
       await Promise.all(refreshTargets.map(function (url) {
