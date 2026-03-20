@@ -661,16 +661,8 @@ body {
 
 .month-table tbody td[data-column="wakeTime"] .time-input,
 .month-table tbody td[data-column="bedTime"] .time-input,
-.month-table tbody td[data-column="yoga"] .yoga-time-button {
+.month-table tbody td[data-column="yoga"] .time-input {
   background: rgba(255, 255, 255, 0.42);
-}
-
-.yoga-time-button {
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
 }
 
 .sleep-cell {

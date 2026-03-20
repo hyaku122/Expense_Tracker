@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260320-6';
+  var ASSET_VERSION = '20260320-7';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -701,7 +701,8 @@
           }
         } else if (column.key === 'yoga') {
           cell.classList.add('input-cell');
-          var yogaInput = createYogaTimeInput(entry[column.key], dateKey, month, wrapper, cell);
+          var yogaValue = typeof entry[column.key] === 'string' ? entry[column.key] : '';
+          var yogaInput = createTimeInput(column.key, yogaValue, dateKey, month, wrapper, cell);
           cell.appendChild(yogaInput);
           applyYogaCellStyle(cell, entry[column.key]);
         } else if (column.key === 'wakeTime' || column.key === 'bedTime') {
@@ -790,48 +791,6 @@
     });
 
     return input;
-  }
-
-  function getCurrentClockText() {
-    var current = new Date();
-    return C.formatMinutesToClock(current.getHours() * 60 + current.getMinutes());
-  }
-
-  function getYogaDisplayValue(value) {
-    if (typeof value === 'string' && value) {
-      return value;
-    }
-    if (value === true) {
-      return '済';
-    }
-    return '';
-  }
-
-  function hasYogaRecord(value) {
-    return value === true || (typeof value === 'string' && value.trim() !== '');
-  }
-
-  function createYogaTimeInput(value, dateKey, month, wrapper, cell) {
-    var button = document.createElement('button');
-    var displayValue = getYogaDisplayValue(value);
-    button.type = 'button';
-    button.className = 'time-input yoga-time-button' + (displayValue ? '' : ' is-empty');
-    button.textContent = displayValue || '\u00a0';
-    button.setAttribute('aria-label', displayValue ? 'ヨガ記録 ' + displayValue : 'ヨガ時刻を記録');
-
-    button.addEventListener('focus', function () {
-      rememberTouched(month, 'yoga', wrapper, cell);
-    });
-
-    button.addEventListener('pointerdown', function () {
-      rememberTouched(month, 'yoga', wrapper, cell);
-    });
-
-    button.addEventListener('click', function () {
-      persistField(dateKey, month, 'yoga', getCurrentClockText(), true);
-    });
-
-    return button;
   }
 
   function createSelectInput(fieldKey, value, dateKey, month, wrapper, cell) {
@@ -1116,7 +1075,7 @@
 
   function applyYogaCellStyle(cell, value) {
     cell.classList.remove('yoga-on', 'value-filled', 'filled-yoga');
-    if (!hasYogaRecord(value)) {
+    if (value !== true && (typeof value !== 'string' || value.trim() === '')) {
       return;
     }
     cell.classList.add('yoga-on', 'value-filled', 'filled-yoga');
