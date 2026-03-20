@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260320-3';
+  var ASSET_VERSION = '20260320-4';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -58,6 +58,7 @@
   var yearLabel = document.getElementById('yearLabel');
   var yearPrevButton = document.getElementById('yearPrevButton');
   var yearNextButton = document.getElementById('yearNextButton');
+  var jumpWeekButton = document.getElementById('jumpWeekButton');
   var updateButton = document.getElementById('updateButton');
   var settingsButton = document.getElementById('settingsButton');
   var summaryButton = document.getElementById('summaryButton');
@@ -127,17 +128,19 @@
     return start;
   }
 
+  function getCurrentWeekAnchorDateKey() {
+    var weekStart = getWeekStartMonday(now);
+    if (weekStart.getFullYear() !== now.getFullYear() || weekStart.getMonth() !== now.getMonth()) {
+      return C.toDateKey(now.getFullYear(), now.getMonth() + 1, 1);
+    }
+    return C.toDateKey(weekStart.getFullYear(), weekStart.getMonth() + 1, weekStart.getDate());
+  }
+
   function getInitialScrollDateKey() {
     if (selectedYear !== now.getFullYear()) {
       return '';
     }
-
-    var weekStart = getWeekStartMonday(now);
-    if (weekStart.getFullYear() !== selectedYear || weekStart.getMonth() !== now.getMonth()) {
-      return C.toDateKey(selectedYear, now.getMonth() + 1, 1);
-    }
-
-    return C.toDateKey(weekStart.getFullYear(), weekStart.getMonth() + 1, weekStart.getDate());
+    return getCurrentWeekAnchorDateKey();
   }
 
   function positionInitialViewport() {
@@ -165,10 +168,31 @@
     }
 
     var headerHeight = topHeader ? topHeader.offsetHeight : 0;
-    var top = row.getBoundingClientRect().top + window.pageYOffset - headerHeight - 6;
+    var monthSection = row.closest('.month-section');
+    var monthStickyHead = monthSection ? monthSection.querySelector('.month-sticky-head') : null;
+    var monthStickyHeight = monthStickyHead ? monthStickyHead.offsetHeight : 0;
+    var top = row.getBoundingClientRect().top + window.pageYOffset - headerHeight - monthStickyHeight - 6;
     window.scrollTo({
       top: Math.max(0, top),
       behavior: smooth ? 'smooth' : 'auto'
+    });
+  }
+
+  function moveToCurrentWeek(smooth) {
+    selectedYear = now.getFullYear();
+    state.selectedYear = selectedYear;
+    C.ensureYearState(state, selectedYear);
+    activeMonth = now.getMonth() + 1;
+
+    renderAll();
+
+    requestAnimationFrame(function () {
+      updateStickyOffsets();
+      scrollTabToMonth(activeMonth, smooth);
+      scrollDateRowIntoView(getCurrentWeekAnchorDateKey(), smooth);
+      requestAnimationFrame(function () {
+        playTodayIntroAnimation();
+      });
     });
   }
 
@@ -238,6 +262,12 @@
     summaryButton.addEventListener('click', function () {
       window.location.href = 'summary.html?year=' + selectedYear;
     });
+
+    if (jumpWeekButton) {
+      jumpWeekButton.addEventListener('click', function () {
+        moveToCurrentWeek(true);
+      });
+    }
 
     updateButton.addEventListener('click', refreshToLatest);
     settingsButton.addEventListener('click', openSettings);

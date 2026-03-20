@@ -99,6 +99,12 @@ body {
   background: linear-gradient(145deg, #4cb4a4, #4f88d6);
 }
 
+.jump-week-button {
+  background: linear-gradient(145deg, #ffd86b, #f5a55f);
+  color: #fffdf7;
+  text-shadow: 0 1px 0 rgba(181, 99, 29, 0.28);
+}
+
 .settings-button {
   background: linear-gradient(145deg, #e79a72, #cc7dc7);
 }

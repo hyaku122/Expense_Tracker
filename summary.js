@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260320-3';
+  var ASSET_VERSION = '20260320-4';
 
   var summaryHeader = document.getElementById('summaryHeader');
   var summaryTitle = document.getElementById('summaryTitle');
@@ -19,6 +19,7 @@
   var backToMainButton = document.getElementById('backToMainButton');
   var yearSummaryTable = document.getElementById('yearSummaryTable');
 
+  var jumpWeekButton = document.getElementById('jumpWeekButton');
   var updateButton = document.getElementById('updateButton');
   var settingsButton = document.getElementById('settingsButton');
 
@@ -70,6 +71,12 @@
     backToMainButton.addEventListener('click', function () {
       window.location.href = 'index.html?year=' + selectedYear;
     });
+
+    if (jumpWeekButton) {
+      jumpWeekButton.addEventListener('click', function () {
+        window.location.href = 'index.html?year=' + now.getFullYear();
+      });
+    }
 
     updateButton.addEventListener('click', refreshToLatest);
     settingsButton.addEventListener('click', openSettings);
