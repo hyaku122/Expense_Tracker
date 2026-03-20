@@ -2,20 +2,18 @@ Add-Type -AssemblyName System.Drawing
 
 $canvasSize = 1024
 $glyph = [string][char]0x6574
-$fontSize = 580
+$fontSize = 540
 $fontCandidates = @(
-  'Noto Serif JP SemiBold',
-  'Noto Serif JP',
-  'Yu Mincho Demibold',
-  'Yu Mincho',
-  'BIZ UDMincho Medium',
-  'MS PMincho',
+  'Noto Sans JP Black',
+  'Yu Gothic UI Semibold',
+  'BIZ UDPGothic',
   'Meiryo'
 )
 
-$backgroundTop = [System.Drawing.ColorTranslator]::FromHtml('#83BFB9')
-$backgroundBottom = [System.Drawing.ColorTranslator]::FromHtml('#75A8CB')
-$textColor = [System.Drawing.ColorTranslator]::FromHtml('#F2FAFF')
+$backgroundLight = [System.Drawing.ColorTranslator]::FromHtml('#8CC9C2')
+$backgroundMid = [System.Drawing.ColorTranslator]::FromHtml('#6F9FC5')
+$backgroundDark = [System.Drawing.ColorTranslator]::FromHtml('#4169AC')
+$textColor = [System.Drawing.ColorTranslator]::FromHtml('#FFFFFF')
 
 $outputDir = $PSScriptRoot
 
@@ -46,23 +44,23 @@ function New-AppIconBitmap {
   $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
   $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
   $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-  $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+  $graphics.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
 
   $rect = New-Object System.Drawing.Rectangle 0, 0, $canvasSize, $canvasSize
-  $backgroundBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect, $backgroundTop, $backgroundBottom, 90)
+  $backgroundBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect, $backgroundLight, $backgroundDark, 45)
+  $colorBlend = New-Object System.Drawing.Drawing2D.ColorBlend 3
+  $colorBlend.Colors = [System.Drawing.Color[]]@($backgroundLight, $backgroundMid, $backgroundDark)
+  $colorBlend.Positions = [single[]]@(0.0, 0.4, 1.0)
+  $backgroundBrush.InterpolationColors = $colorBlend
   $textBrush = New-Object System.Drawing.SolidBrush($textColor)
   $stringFormat = New-Object System.Drawing.StringFormat([System.Drawing.StringFormat]::GenericDefault)
   $fontFamily = New-Object System.Drawing.FontFamily($FontName)
-  $fontStyle = if ($fontFamily.IsStyleAvailable([System.Drawing.FontStyle]::Bold)) {
-    [System.Drawing.FontStyle]::Bold
-  } else {
-    [System.Drawing.FontStyle]::Regular
-  }
+  $fontStyle = [System.Drawing.FontStyle]::Regular
   $textPath = New-Object System.Drawing.Drawing2D.GraphicsPath
   $textPath.AddString($glyph, $fontFamily, [int]$fontStyle, [single]$fontSize, (New-Object System.Drawing.Point 0, 0), $stringFormat)
   $bounds = $textPath.GetBounds()
   $offsetX = (($canvasSize - $bounds.Width) / 2) - $bounds.X
-  $offsetY = (($canvasSize - $bounds.Height) / 2) - $bounds.Y - 10
+  $offsetY = (($canvasSize - $bounds.Height) / 2) - $bounds.Y - 4
   $matrix = New-Object System.Drawing.Drawing2D.Matrix
   $matrix.Translate($offsetX, $offsetY)
   $textPath.Transform($matrix)

@@ -1,21 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="appIconTitle appIconDesc">
   <title id="appIconTitle">Mindful Life Log app icon</title>
-  <desc id="appIconDesc">Blue gradient app icon with the kanji U+6574 in a mincho style.</desc>
+  <desc id="appIconDesc">Blue gradient app icon with the kanji U+6574 in a clean modern gothic style.</desc>
   <defs>
-    <linearGradient id="iconBackground" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#83BFB9" />
-      <stop offset="100%" stop-color="#75A8CB" />
+    <linearGradient id="iconBackground" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8CC9C2" />
+      <stop offset="40%" stop-color="#6F9FC5" />
+      <stop offset="100%" stop-color="#4169AC" />
     </linearGradient>
   </defs>
   <rect width="1024" height="1024" fill="url(#iconBackground)" />
   <text
     x="512"
     y="540"
-    fill="#F2FAFF"
-    font-size="580"
-    font-weight="600"
+    fill="#FFFFFF"
+    font-size="540"
+    font-weight="400"
     text-anchor="middle"
     dominant-baseline="central"
-    font-family="'Noto Serif JP SemiBold', 'Noto Serif JP', 'Yu Mincho', 'BIZ UDMincho Medium', 'MS PMincho', serif"
+    font-family="'Noto Sans JP Black', 'Yu Gothic UI Semibold', 'BIZ UDPGothic', 'Meiryo', sans-serif"
   >&#x6574;</text>
 </svg>
