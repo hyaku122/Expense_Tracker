@@ -605,7 +605,7 @@ body {
   accent-color: #4f80d9;
 }
 
-.check-cell.yoga-on {
+.month-table tbody td.yoga-on {
   background: #edf8e2;
 }
 
@@ -660,8 +660,17 @@ body {
 }
 
 .month-table tbody td[data-column="wakeTime"] .time-input,
-.month-table tbody td[data-column="bedTime"] .time-input {
+.month-table tbody td[data-column="bedTime"] .time-input,
+.month-table tbody td[data-column="yoga"] .yoga-time-button {
   background: rgba(255, 255, 255, 0.42);
+}
+
+.yoga-time-button {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }
 
 .sleep-cell {

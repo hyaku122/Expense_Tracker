@@ -20,7 +20,7 @@
       step: 1,
       defaultValue: 20
     },
-    yoga: { key: 'yoga', label: 'ヨガ', kind: 'check' },
+    yoga: { key: 'yoga', label: 'ヨガ', kind: 'time' },
     morningStairs: { key: 'morningStairs', label: '朝階段', kind: 'check' },
     mercari: {
       key: 'mercari',
