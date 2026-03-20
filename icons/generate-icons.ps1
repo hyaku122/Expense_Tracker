@@ -4,16 +4,18 @@ $canvasSize = 1024
 $glyph = [string][char]0x6574
 $fontSize = 580
 $fontCandidates = @(
-  'Yu Gothic UI Semibold',
-  'HGMaruGothicMPRO',
-  'BIZ UDPGothic',
-  'Noto Sans JP Black',
+  'Noto Serif JP SemiBold',
+  'Noto Serif JP',
+  'Yu Mincho Demibold',
+  'Yu Mincho',
+  'BIZ UDMincho Medium',
+  'MS PMincho',
   'Meiryo'
 )
 
-$backgroundTop = [System.Drawing.Color]::FromArgb(255, 163, 205, 205)
-$backgroundBottom = [System.Drawing.Color]::FromArgb(255, 129, 169, 216)
-$textColor = [System.Drawing.ColorTranslator]::FromHtml('#5A7073')
+$backgroundTop = [System.Drawing.ColorTranslator]::FromHtml('#83BFB9')
+$backgroundBottom = [System.Drawing.ColorTranslator]::FromHtml('#75A8CB')
+$textColor = [System.Drawing.ColorTranslator]::FromHtml('#F2FAFF')
 
 $outputDir = $PSScriptRoot
 
