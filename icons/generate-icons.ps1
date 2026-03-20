@@ -2,18 +2,18 @@ Add-Type -AssemblyName System.Drawing
 
 $canvasSize = 1024
 $glyph = [string][char]0x6574
-$fontSize = 540
+$fontSize = 565
 $fontCandidates = @(
-  'Noto Sans JP Black',
   'Yu Gothic UI Semibold',
+  'Yu Gothic UI',
   'BIZ UDPGothic',
   'Meiryo'
 )
 
-$backgroundLight = [System.Drawing.ColorTranslator]::FromHtml('#8CC9C2')
-$backgroundMid = [System.Drawing.ColorTranslator]::FromHtml('#6F9FC5')
-$backgroundDark = [System.Drawing.ColorTranslator]::FromHtml('#4169AC')
-$textColor = [System.Drawing.ColorTranslator]::FromHtml('#FFFFFF')
+$backgroundLight = [System.Drawing.ColorTranslator]::FromHtml('#9AD9CB')
+$backgroundMid = [System.Drawing.ColorTranslator]::FromHtml('#7FAECE')
+$backgroundDark = [System.Drawing.ColorTranslator]::FromHtml('#5C86C2')
+$textColor = [System.Drawing.ColorTranslator]::FromHtml('#EEF9FF')
 
 $outputDir = $PSScriptRoot
 
@@ -50,7 +50,7 @@ function New-AppIconBitmap {
   $backgroundBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect, $backgroundLight, $backgroundDark, 45)
   $colorBlend = New-Object System.Drawing.Drawing2D.ColorBlend 3
   $colorBlend.Colors = [System.Drawing.Color[]]@($backgroundLight, $backgroundMid, $backgroundDark)
-  $colorBlend.Positions = [single[]]@(0.0, 0.4, 1.0)
+  $colorBlend.Positions = [single[]]@(0.0, 0.5, 1.0)
   $backgroundBrush.InterpolationColors = $colorBlend
   $textBrush = New-Object System.Drawing.SolidBrush($textColor)
   $stringFormat = New-Object System.Drawing.StringFormat([System.Drawing.StringFormat]::GenericDefault)
@@ -60,7 +60,7 @@ function New-AppIconBitmap {
   $textPath.AddString($glyph, $fontFamily, [int]$fontStyle, [single]$fontSize, (New-Object System.Drawing.Point 0, 0), $stringFormat)
   $bounds = $textPath.GetBounds()
   $offsetX = (($canvasSize - $bounds.Width) / 2) - $bounds.X
-  $offsetY = (($canvasSize - $bounds.Height) / 2) - $bounds.Y - 4
+  $offsetY = (($canvasSize - $bounds.Height) / 2) - $bounds.Y - 6
   $matrix = New-Object System.Drawing.Drawing2D.Matrix
   $matrix.Translate($offsetX, $offsetY)
   $textPath.Transform($matrix)
