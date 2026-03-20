@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260320-1';
+  var ASSET_VERSION = '20260320-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -90,6 +90,9 @@
   var saveTimer = null;
   var weightPickerState = null;
   var noteModalState = null;
+  var todayDateKey = C.toDateKey(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  var initialScrollDateKey = getInitialScrollDateKey();
+  var initialViewportAdjusted = false;
 
   init();
 
@@ -112,7 +115,76 @@
     requestAnimationFrame(function () {
       updateStickyOffsets();
       scrollTabToMonth(activeMonth, false);
+      positionInitialViewport();
     });
+  }
+
+  function getWeekStartMonday(date) {
+    var start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    var weekday = start.getDay();
+    var diff = weekday === 0 ? -6 : 1 - weekday;
+    start.setDate(start.getDate() + diff);
+    return start;
+  }
+
+  function getInitialScrollDateKey() {
+    if (selectedYear !== now.getFullYear()) {
+      return '';
+    }
+
+    var weekStart = getWeekStartMonday(now);
+    if (weekStart.getFullYear() !== selectedYear || weekStart.getMonth() !== now.getMonth()) {
+      return C.toDateKey(selectedYear, now.getMonth() + 1, 1);
+    }
+
+    return C.toDateKey(weekStart.getFullYear(), weekStart.getMonth() + 1, weekStart.getDate());
+  }
+
+  function positionInitialViewport() {
+    if (initialViewportAdjusted) {
+      return;
+    }
+
+    initialViewportAdjusted = true;
+
+    requestAnimationFrame(function () {
+      if (initialScrollDateKey) {
+        scrollDateRowIntoView(initialScrollDateKey, false);
+      }
+
+      requestAnimationFrame(function () {
+        playTodayIntroAnimation();
+      });
+    });
+  }
+
+  function scrollDateRowIntoView(dateKey, smooth) {
+    var row = monthSections.querySelector('tr[data-date-key="' + dateKey + '"]');
+    if (!row) {
+      return;
+    }
+
+    var headerHeight = topHeader ? topHeader.offsetHeight : 0;
+    var top = row.getBoundingClientRect().top + window.pageYOffset - headerHeight - 6;
+    window.scrollTo({
+      top: Math.max(0, top),
+      behavior: smooth ? 'smooth' : 'auto'
+    });
+  }
+
+  function playTodayIntroAnimation() {
+    var row = monthSections.querySelector('.today-row');
+    if (!row) {
+      return;
+    }
+
+    row.classList.remove('today-row-intro');
+    void row.offsetWidth;
+    row.classList.add('today-row-intro');
+
+    window.setTimeout(function () {
+      row.classList.remove('today-row-intro');
+    }, 2400);
   }
 
   function applyStickyColumnVars() {
@@ -551,9 +623,15 @@
     for (var day = 1; day <= daysInMonth; day += 1) {
       var dateKey = C.toDateKey(selectedYear, month, day);
       var row = document.createElement('tr');
+      row.dataset.dateKey = dateKey;
       var entry = entries[dateKey] || {};
       var dateObj = new Date(selectedYear, month - 1, day);
       var dayType = C.getDayType(dateKey);
+      var isToday = dateKey === todayDateKey;
+
+      if (isToday) {
+        row.classList.add('today-row');
+      }
 
       TABLE_COLUMNS.forEach(function (column, columnIndex) {
         var cell = document.createElement('td');
@@ -566,12 +644,23 @@
           cell.classList.add('sticky-col-2');
         }
 
+        if (isToday) {
+          cell.classList.add('today-cell');
+        }
+
         if (column.key === 'date') {
           cell.textContent = month + '/' + day;
           applyDayStyle(cell, dayType, true);
+          if (isToday) {
+            cell.classList.add('date-today', 'today-fixed-cell');
+            cell.setAttribute('aria-current', 'date');
+          }
         } else if (column.key === 'weekday') {
           cell.textContent = C.getWeekdayLabel(dateObj);
           applyDayStyle(cell, dayType, false);
+          if (isToday) {
+            cell.classList.add('weekday-today', 'today-fixed-cell');
+          }
         } else if (column.key === 'sleepDuration') {
           var duration = C.getSleepDurationMinutes(entries, dateKey);
           cell.classList.add('sleep-cell', 'value-cell');
