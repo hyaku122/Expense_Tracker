@@ -1,19 +1,19 @@
 ﻿const CACHE_PREFIX = 'mindful-life-log-cache';
-const CACHE_VERSION = '20260320-v16';
+const CACHE_VERSION = '20260412-v17';
 const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   './',
   './index.html',
   './summary.html',
-  './styles.css?v=20260320-7',
-  './common.js?v=20260320-7',
-  './app.js?v=20260320-7',
-  './summary.js?v=20260320-7',
-  './manifest.webmanifest?v=20260320-7',
-  './icons/icon-192.png?v=20260320-7',
-  './icons/icon-512.png?v=20260320-7',
-  './icons/apple-touch-icon.png?v=20260320-7'
+  './styles.css?v=20260412-1',
+  './common.js?v=20260412-1',
+  './app.js?v=20260412-1',
+  './summary.js?v=20260412-1',
+  './manifest.webmanifest?v=20260412-1',
+  './icons/icon-192.png?v=20260412-1',
+  './icons/icon-512.png?v=20260412-1',
+  './icons/apple-touch-icon.png?v=20260412-1'
 ];
 
 self.addEventListener('install', (event) => {

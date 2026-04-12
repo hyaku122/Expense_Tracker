@@ -18,6 +18,10 @@
   --today-ring: rgba(240, 199, 106, 0.88);
   --today-shadow: rgba(245, 205, 108, 0.2);
   --today-shadow-strong: rgba(245, 205, 108, 0.55);
+  --miss-fill: linear-gradient(145deg, #4d5662, #353d48);
+  --miss-control-bg: rgba(44, 52, 62, 0.78);
+  --miss-control-line: rgba(198, 207, 218, 0.24);
+  --miss-control-text: #f5f7fb;
 }
 
 * {
@@ -641,6 +645,20 @@ body {
   background: #e7eefc;
 }
 
+.month-table tbody td.value-miss[data-column="mercari"],
+.month-table tbody td.value-miss[data-column="paleo"],
+.month-table tbody td.value-miss[data-column="walk"],
+.month-table tbody td.value-miss[data-column="reading"],
+.month-table tbody td.value-miss[data-column="bathMeditation"] {
+  background: var(--miss-fill);
+}
+
+.month-table tbody td.value-miss .select-input {
+  background: var(--miss-control-bg);
+  border-color: var(--miss-control-line);
+  color: var(--miss-control-text);
+}
+
 .month-table tbody td.weight-up {
   background: #ef9a7a;
 }
@@ -660,8 +678,7 @@ body {
 }
 
 .month-table tbody td[data-column="wakeTime"] .time-input,
-.month-table tbody td[data-column="bedTime"] .time-input,
-.month-table tbody td[data-column="yoga"] .time-input {
+.month-table tbody td[data-column="bedTime"] .time-input {
   background: rgba(255, 255, 255, 0.42);
 }
 
