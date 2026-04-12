@@ -509,6 +509,23 @@
     return sum / values.length;
   }
 
+  function getCheckState(value) {
+    if (value === 'miss') {
+      return 'miss';
+    }
+    if (value === true) {
+      return 'done';
+    }
+    if (value === null || typeof value === 'undefined' || value === false || value === '') {
+      return 'empty';
+    }
+    return 'done';
+  }
+
+  function isCheckDoneValue(value) {
+    return getCheckState(value) === 'done';
+  }
+
   function computeMonthStats(year, month, entries) {
     var daysInMonth = getDaysInMonth(year, month);
     var dateKeys = [];
@@ -542,7 +559,7 @@
         });
 
         CHECK_KEYS.forEach(function (key) {
-          if (entry[key]) {
+          if (isCheckDoneValue(entry[key])) {
             checks[key] += 1;
           }
         });
@@ -716,6 +733,8 @@
     formatNumber: formatNumber,
     formatPercent: formatPercent,
     toNumberOrNull: toNumberOrNull,
+    getCheckState: getCheckState,
+    isCheckDoneValue: isCheckDoneValue,
     getWeekdayLabel: getWeekdayLabel,
     isJapaneseHoliday: isJapaneseHoliday,
     getDayType: getDayType,

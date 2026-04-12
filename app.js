@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260412-1';
+  var ASSET_VERSION = '20260412-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -722,9 +722,10 @@
           cell.appendChild(selectInput);
           applyFilledCellStyle(cell, column.key, entry[column.key]);
         } else if (isCheckField(column.key)) {
-          var checkbox = createCheckInput(column.key, Boolean(entry[column.key]), dateKey, month, wrapper, cell);
+          var checkState = getCheckState(entry[column.key]);
+          var checkbox = createCheckInput(column.key, checkState, dateKey, month, wrapper, cell);
           cell.appendChild(checkbox);
-          applyCheckCellStyle(cell, column.key, Boolean(entry[column.key]));
+          applyCheckCellStyle(cell, column.key, checkState);
         } else if (column.key === 'weight') {
           cell.classList.add('input-cell');
           var weightInput = createWeightInput(entry.weight, dateKey, month, wrapper, cell);
@@ -774,6 +775,61 @@
       fieldKey === 'walk' ||
       fieldKey === 'reading' ||
       fieldKey === 'bathMeditation';
+  }
+
+  function getCheckState(value) {
+    if (C.getCheckState) {
+      return C.getCheckState(value);
+    }
+    if (value === 'miss') {
+      return 'miss';
+    }
+    if (value) {
+      return 'done';
+    }
+    return 'empty';
+  }
+
+  function getNextCheckState(currentState) {
+    if (currentState === 'done') {
+      return 'miss';
+    }
+    if (currentState === 'miss') {
+      return 'empty';
+    }
+    return 'done';
+  }
+
+  function getStoredCheckValue(checkState) {
+    if (checkState === 'done') {
+      return true;
+    }
+    if (checkState === 'miss') {
+      return 'miss';
+    }
+    return null;
+  }
+
+  function getCheckButtonLabel(checkState) {
+    if (checkState === 'done') {
+      return '✓';
+    }
+    if (checkState === 'miss') {
+      return '×';
+    }
+    return '';
+  }
+
+  function getCheckAriaLabel(fieldKey, checkState) {
+    var field = C.FIELDS[fieldKey];
+    var label = field ? field.label : fieldKey;
+    if (checkState === 'done') {
+      return label + ' 実施';
+    }
+    if (checkState === 'miss') {
+      return label + ' ×';
+    }
+    return label + ' 未入力';
   }
 
   function createTimeInput(fieldKey, value, dateKey, month, wrapper, cell) {
@@ -893,27 +949,30 @@
     return select;
   }
 
-  function createCheckInput(fieldKey, checked, dateKey, month, wrapper, cell) {
-    var input = document.createElement('input');
-    input.type = 'checkbox';
-    input.className = 'check-input';
-    input.checked = checked;
+  function createCheckInput(fieldKey, checkState, dateKey, month, wrapper, cell) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'check-input check-input-' + checkState;
+    button.dataset.state = checkState;
+    button.textContent = getCheckButtonLabel(checkState);
+    button.setAttribute('aria-label', getCheckAriaLabel(fieldKey, checkState));
 
-    input.addEventListener('focus', function () {
+    button.addEventListener('focus', function () {
       rememberTouched(month, fieldKey, wrapper, cell);
     });
 
-    input.addEventListener('pointerdown', function () {
+    button.addEventListener('pointerdown', function () {
       rememberTouched(month, fieldKey, wrapper, cell);
     });
 
-    input.addEventListener('change', function () {
-      persistField(dateKey, month, fieldKey, input.checked, true);
+    button.addEventListener('click', function () {
+      var nextState = getNextCheckState(button.dataset.state || 'empty');
+      persistField(dateKey, month, fieldKey, getStoredCheckValue(nextState), true);
     });
 
     cell.classList.add('check-cell');
 
-    return input;
+    return button;
   }
 
   function formatWeightOptionValue(value) {
@@ -1119,9 +1178,13 @@
     return button;
   }
 
-  function applyCheckCellStyle(cell, fieldKey, checked) {
-    cell.classList.remove('yoga-on', 'morning-stairs-on', 'night-stairs-on', 'value-filled', 'filled-yoga', 'filled-morningStairs', 'filled-nightStairs');
-    if (!checked) {
+  function applyCheckCellStyle(cell, fieldKey, checkState) {
+    cell.classList.remove('yoga-on', 'morning-stairs-on', 'night-stairs-on', 'check-miss', 'value-filled', 'filled-yoga', 'filled-morningStairs', 'filled-nightStairs');
+    if (checkState === 'miss') {
+      cell.classList.add('check-miss', 'value-filled');
+      return;
+    }
+    if (checkState !== 'done') {
       return;
     }
     if (fieldKey === 'yoga') {
@@ -1161,7 +1224,9 @@
     var field = C.FIELDS[fieldKey] || null;
 
     if (field && field.kind === 'check') {
-      if (value) {
+      if (value === 'miss') {
+        current[fieldKey] = 'miss';
+      } else if (value) {
         current[fieldKey] = true;
       } else {
         delete current[fieldKey];

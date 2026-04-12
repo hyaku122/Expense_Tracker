@@ -602,11 +602,48 @@ body {
 }
 
 .check-input {
-  display: block;
-  width: 24px;
-  height: 24px;
+  -webkit-appearance: none;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
   margin: 0 auto;
-  accent-color: #4f80d9;
+  border: 1px solid #b5c0ca;
+  border-radius: 10px;
+  background: #f7fbff;
+  color: #6f8294;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.check-input:focus-visible {
+  outline: 2px solid rgba(79, 136, 214, 0.36);
+  outline-offset: 1px;
+}
+
+.check-input:active {
+  transform: scale(0.95);
+}
+
+.check-input.check-input-empty {
+  color: transparent;
+}
+
+.check-input.check-input-done {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(103, 136, 173, 0.5);
+  color: #4f80d9;
+}
+
+.check-input.check-input-miss {
+  background: var(--miss-control-bg);
+  border-color: var(--miss-control-line);
+  color: var(--miss-control-text);
 }
 
 .month-table tbody td.yoga-on {
@@ -619,6 +656,10 @@ body {
 
 .check-cell.night-stairs-on {
   background: #e3ebf8;
+}
+
+.check-cell.check-miss {
+  background: var(--miss-fill);
 }
 
 .month-table tbody td.value-filled[data-column="morningMeditation"] {
