@@ -4,16 +4,17 @@ $canvasSize = 1024
 $glyph = [string][char]0x6574
 $fontSize = 565
 $fontCandidates = @(
+  'Yu Mincho Demibold',
+  'Yu Mincho',
+  'BIZ UDPMincho',
   'Yu Gothic UI Semibold',
-  'Yu Gothic UI',
-  'BIZ UDPGothic',
   'Meiryo'
 )
 
 $backgroundLight = [System.Drawing.ColorTranslator]::FromHtml('#9AD9CB')
 $backgroundMid = [System.Drawing.ColorTranslator]::FromHtml('#7FAECE')
 $backgroundDark = [System.Drawing.ColorTranslator]::FromHtml('#5C86C2')
-$textColor = [System.Drawing.ColorTranslator]::FromHtml('#EEF9FF')
+$textColor = [System.Drawing.ColorTranslator]::FromHtml('#FFF2D8')
 
 $outputDir = $PSScriptRoot
 
@@ -55,7 +56,7 @@ function New-AppIconBitmap {
   $textBrush = New-Object System.Drawing.SolidBrush($textColor)
   $stringFormat = New-Object System.Drawing.StringFormat([System.Drawing.StringFormat]::GenericDefault)
   $fontFamily = New-Object System.Drawing.FontFamily($FontName)
-  $fontStyle = [System.Drawing.FontStyle]::Regular
+  $fontStyle = [System.Drawing.FontStyle]::Bold
   $textPath = New-Object System.Drawing.Drawing2D.GraphicsPath
   $textPath.AddString($glyph, $fontFamily, [int]$fontStyle, [single]$fontSize, (New-Object System.Drawing.Point 0, 0), $stringFormat)
   $bounds = $textPath.GetBounds()
