@@ -49,6 +49,7 @@
       step: 1,
       defaultValue: 40
     },
+    strengthTraining: { key: 'strengthTraining', label: '筋トレ', kind: 'check' },
     nightStairs: { key: 'nightStairs', label: '夜階段', kind: 'check' },
     reading: {
       key: 'reading',
@@ -84,7 +85,7 @@
   };
 
   var TOTAL_KEYS = ['morningMeditation', 'mercari', 'paleo', 'walk', 'reading', 'bathMeditation'];
-  var CHECK_KEYS = ['yoga', 'morningStairs', 'nightStairs'];
+  var CHECK_KEYS = ['yoga', 'morningStairs', 'strengthTraining', 'nightStairs'];
 
   var WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
   var MONTH_LABELS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
@@ -540,6 +541,7 @@
     var checks = {
       yoga: 0,
       morningStairs: 0,
+      strengthTraining: 0,
       nightStairs: 0
     };
 
@@ -586,6 +588,7 @@
       checkRates: {
         yoga: (checks.yoga / daysInMonth) * 100,
         morningStairs: (checks.morningStairs / daysInMonth) * 100,
+        strengthTraining: (checks.strengthTraining / daysInMonth) * 100,
         nightStairs: (checks.nightStairs / daysInMonth) * 100
       },
       checks: checks,

@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260503-1';
+  var ASSET_VERSION = '20260503-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -23,6 +23,7 @@
     { key: 'mercari', label: 'メルカリ' },
     { key: 'paleo', label: 'パレオ' },
     { key: 'walk', label: '散歩' },
+    { key: 'strengthTraining', label: '筋トレ' },
     { key: 'nightStairs', label: '夜階段' },
     { key: 'reading', label: '読書' },
     { key: 'bathMeditation', label: '瞑想♨' },
@@ -41,6 +42,7 @@
     mercari: 74,
     paleo: 57,
     walk: 70,
+    strengthTraining: 68,
     nightStairs: 68,
     reading: 70,
     bathMeditation: 72,
@@ -562,12 +564,17 @@
       mercari: String(Math.round(stats.totals.mercari)),
       paleo: String(Math.round(stats.totals.paleo)),
       walk: C.formatDurationHM(stats.totals.walk),
+      strengthTraining: formatCount(stats.checks.strengthTraining),
       nightStairs: C.formatPercent(stats.checkRates.nightStairs),
       reading: C.formatDurationHM(stats.totals.reading),
       bathMeditation: C.formatDurationHM(stats.totals.bathMeditation),
       weight: stats.monthEndWeight === null ? '-' : C.formatNumber(stats.monthEndWeight, 1),
       note: '-'
     };
+  }
+
+  function formatCount(value) {
+    return String(value || 0) + '回';
   }
 
   function appendHeaderRows(thead, aggregateValues, columns, useStickyColumns) {
@@ -725,6 +732,9 @@
           var checkState = getCheckState(entry[column.key]);
           var checkbox = createCheckInput(column.key, checkState, dateKey, month, wrapper, cell);
           cell.appendChild(checkbox);
+          if (column.key === 'strengthTraining') {
+            applyStrengthTrainingWeekStyle(cell, entries, dateKey);
+          }
           applyCheckCellStyle(cell, column.key, checkState);
         } else if (column.key === 'weight') {
           cell.classList.add('input-cell');
@@ -756,6 +766,37 @@
     if (dayType === 'saturday') {
       cell.classList.add(isDateColumn ? 'date-sat' : 'weekday-sat');
     }
+  }
+
+  function getWeekStartDate(dateKey) {
+    var date = C.dateFromKey(dateKey);
+    var mondayOffset = date.getDay() === 0 ? -6 : 1 - date.getDay();
+    date.setDate(date.getDate() + mondayOffset);
+    return date;
+  }
+
+  function getStrengthTrainingWeekCount(entries, dateKey) {
+    var weekStart = getWeekStartDate(dateKey);
+    var count = 0;
+
+    for (var offset = 0; offset < 7; offset += 1) {
+      var targetDate = new Date(weekStart);
+      targetDate.setDate(weekStart.getDate() + offset);
+      if (targetDate.getFullYear() !== selectedYear) {
+        continue;
+      }
+      var targetKey = C.toDateKey(targetDate.getFullYear(), targetDate.getMonth() + 1, targetDate.getDate());
+      var entry = entries[targetKey] || null;
+      if (entry && C.isCheckDoneValue(entry.strengthTraining)) {
+        count += 1;
+      }
+    }
+
+    return count;
+  }
+
+  function applyStrengthTrainingWeekStyle(cell, entries, dateKey) {
+    cell.classList.add(getStrengthTrainingWeekCount(entries, dateKey) >= 2 ? 'strength-week-good' : 'strength-week-low');
   }
 
   function isSelectField(fieldKey) {
@@ -1179,9 +1220,12 @@
   }
 
   function applyCheckCellStyle(cell, fieldKey, checkState) {
-    cell.classList.remove('yoga-on', 'morning-stairs-on', 'night-stairs-on', 'check-miss', 'value-filled', 'filled-yoga', 'filled-morningStairs', 'filled-nightStairs');
+    cell.classList.remove('yoga-on', 'morning-stairs-on', 'strength-training-on', 'night-stairs-on', 'check-miss', 'value-filled', 'filled-yoga', 'filled-morningStairs', 'filled-strengthTraining', 'filled-nightStairs');
     if (checkState === 'miss') {
-      cell.classList.add('check-miss', 'value-filled');
+      if (fieldKey !== 'strengthTraining') {
+        cell.classList.add('check-miss');
+      }
+      cell.classList.add('value-filled');
       return;
     }
     if (checkState !== 'done') {
@@ -1193,6 +1237,10 @@
     }
     if (fieldKey === 'morningStairs') {
       cell.classList.add('morning-stairs-on', 'value-filled', 'filled-morningStairs');
+      return;
+    }
+    if (fieldKey === 'strengthTraining') {
+      cell.classList.add('strength-training-on', 'value-filled', 'filled-strengthTraining');
       return;
     }
     if (fieldKey === 'nightStairs') {

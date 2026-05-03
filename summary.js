@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260412-2';
+  var ASSET_VERSION = '20260503-2';
 
   var summaryHeader = document.getElementById('summaryHeader');
   var summaryTitle = document.getElementById('summaryTitle');
@@ -176,6 +176,7 @@
       'メルカリ',
       'パレオ',
       '散歩',
+      '筋トレ',
       '夜階段',
       '読書',
       '瞑想♨',
@@ -208,6 +209,7 @@
         String(Math.round(stats.totals.mercari)),
         String(Math.round(stats.totals.paleo)),
         C.formatDurationHM(stats.totals.walk),
+        formatCount(stats.checks.strengthTraining),
         C.formatPercent(stats.checkRates.nightStairs),
         C.formatDurationHM(stats.totals.reading),
         C.formatDurationHM(stats.totals.bathMeditation),
@@ -228,6 +230,10 @@
 
     yearSummaryTable.appendChild(thead);
     yearSummaryTable.appendChild(tbody);
+  }
+
+  function formatCount(value) {
+    return String(value || 0) + '回';
   }
 
   function updateStickyOffset() {

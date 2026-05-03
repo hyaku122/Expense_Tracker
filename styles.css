@@ -328,6 +328,10 @@ body {
   background: #e78d69;
 }
 
+.month-table .column-row th[data-column="strengthTraining"] {
+  background: #f3bfd0;
+}
+
 .month-table .column-row th[data-column="nightStairs"] {
   background: #5876a6;
   color: #f7fbff;
@@ -654,12 +658,26 @@ body {
   background: #fff0e2;
 }
 
+.check-cell.strength-week-good {
+  background: #ffe5ee;
+}
+
+.check-cell.strength-week-low {
+  background: #e8f4ff;
+}
+
 .check-cell.night-stairs-on {
   background: #e3ebf8;
 }
 
 .check-cell.check-miss {
   background: var(--miss-fill);
+}
+
+.month-table tbody td[data-column="strengthTraining"] .check-input-miss {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(173, 103, 127, 0.34);
+  color: #8a6170;
 }
 
 .month-table tbody td.value-filled[data-column="morningMeditation"] {
