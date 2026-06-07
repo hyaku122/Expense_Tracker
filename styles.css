@@ -723,10 +723,10 @@ body {
 .weekly-goal-toast {
   position: fixed;
   left: 50%;
-  top: calc(env(safe-area-inset-top) + 78px);
+  top: 50%;
   z-index: 160;
   width: min(calc(100% - 36px), 360px);
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   padding: 13px 16px;
   border: 1px solid rgba(219, 53, 111, 0.24);
   border-radius: 14px;
@@ -747,11 +747,11 @@ body {
 @keyframes toast-pop {
   0% {
     opacity: 0;
-    transform: translate(-50%, -8px) scale(0.96);
+    transform: translate(-50%, calc(-50% - 8px)) scale(0.96);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
