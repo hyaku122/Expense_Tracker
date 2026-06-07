@@ -9,7 +9,7 @@
   var UPDATE_CONFIRM_MESSAGE = 'キャッシュを削除して最新版を読み込みます。入力データは消えません。実行しますか？';
   var MIN_YEAR = 2026;
   var MAX_YEAR = 2035;
-  var ASSET_VERSION = '20260503-2';
+  var ASSET_VERSION = '20260607-2';
 
   var TABLE_COLUMNS = [
     { key: 'date', label: '日付' },
@@ -56,6 +56,7 @@
     bathMeditation: true
   };
   var MISS_STYLE_FIELDS = {
+    morningMeditation: true,
     mercari: true,
     paleo: true,
     walk: true,
@@ -73,6 +74,7 @@
   var summaryButton = document.getElementById('summaryButton');
   var monthTabs = document.getElementById('monthTabs');
   var monthSections = document.getElementById('monthSections');
+  var weeklyGoalToast = document.getElementById('weeklyGoalToast');
 
   var settingsModal = document.getElementById('settingsModal');
   var closeSettingsButton = document.getElementById('closeSettingsButton');
@@ -98,6 +100,7 @@
   var selectedYear = sanitizeYear(Number.isFinite(urlYear) ? urlYear : initialState.selectedYear || now.getFullYear());
   var activeMonth = selectedYear === now.getFullYear() ? now.getMonth() + 1 : 1;
   var saveTimer = null;
+  var weeklyGoalToastTimer = null;
   var weightPickerState = null;
   var noteModalState = null;
   var todayDateKey = C.toDateKey(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -795,6 +798,21 @@
     return count;
   }
 
+  function getStrengthTrainingWeekMonths(dateKey) {
+    var weekStart = getWeekStartDate(dateKey);
+    var months = new Set();
+
+    for (var offset = 0; offset < 7; offset += 1) {
+      var targetDate = new Date(weekStart);
+      targetDate.setDate(weekStart.getDate() + offset);
+      if (targetDate.getFullYear() === selectedYear) {
+        months.add(targetDate.getMonth() + 1);
+      }
+    }
+
+    return months;
+  }
+
   function applyStrengthTrainingWeekStyle(cell, entries, dateKey) {
     cell.classList.add(getStrengthTrainingWeekCount(entries, dateKey) >= 2 ? 'strength-week-good' : 'strength-week-low');
   }
@@ -1264,10 +1282,26 @@
     }, 180);
   }
 
+  function showWeeklyGoalToast() {
+    if (!weeklyGoalToast) {
+      return;
+    }
+    if (weeklyGoalToastTimer) {
+      clearTimeout(weeklyGoalToastTimer);
+    }
+    weeklyGoalToast.textContent = '週目標達成👑＼(^o^)／';
+    weeklyGoalToast.classList.remove('hidden');
+    weeklyGoalToastTimer = setTimeout(function () {
+      weeklyGoalToast.classList.add('hidden');
+      weeklyGoalToastTimer = null;
+    }, 3000);
+  }
+
   function persistField(dateKey, month, fieldKey, value, rerender) {
     var yearState = C.ensureYearState(state, selectedYear);
     var entries = yearState.entries;
     var beforeSnapshot = entries[dateKey] ? JSON.stringify(entries[dateKey]) : '';
+    var beforeStrengthWeekCount = fieldKey === 'strengthTraining' ? getStrengthTrainingWeekCount(entries, dateKey) : null;
     var current = entries[dateKey] ? Object.assign({}, entries[dateKey]) : {};
     var field = C.FIELDS[fieldKey] || null;
 
@@ -1305,6 +1339,9 @@
     if (rerender !== false) {
       rerenderAffectedMonths(month, dateKey, fieldKey);
     }
+    if (fieldKey === 'strengthTraining' && beforeStrengthWeekCount < 2 && getStrengthTrainingWeekCount(entries, dateKey) >= 2) {
+      showWeeklyGoalToast();
+    }
     return true;
   }
 
@@ -1317,6 +1354,11 @@
       if (parsed.day === daysInMonth && month < 12) {
         months.add(month + 1);
       }
+    }
+    if (fieldKey === 'strengthTraining') {
+      getStrengthTrainingWeekMonths(dateKey).forEach(function (monthValue) {
+        months.add(monthValue);
+      });
     }
 
     months.forEach(function (monthValue) {

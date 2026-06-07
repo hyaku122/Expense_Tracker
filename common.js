@@ -56,7 +56,7 @@
       label: '読書',
       kind: 'select',
       min: 1,
-      max: 120,
+      max: 180,
       step: 1,
       defaultValue: 15
     },
@@ -73,8 +73,8 @@
       key: 'weight',
       label: '体重',
       kind: 'number',
-      min: 50,
-      max: 80,
+      min: 55,
+      max: 70,
       step: 0.1
     },
     note: {

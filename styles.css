@@ -659,7 +659,8 @@ body {
 }
 
 .check-cell.strength-week-good {
-  background: #ffe5ee;
+  background: linear-gradient(145deg, #ffc1d9, #ff76aa);
+  box-shadow: inset 0 0 0 1px rgba(219, 53, 111, 0.24);
 }
 
 .check-cell.strength-week-low {
@@ -704,6 +705,7 @@ body {
   background: #e7eefc;
 }
 
+.month-table tbody td.value-miss[data-column="morningMeditation"],
 .month-table tbody td.value-miss[data-column="mercari"],
 .month-table tbody td.value-miss[data-column="paleo"],
 .month-table tbody td.value-miss[data-column="walk"],
@@ -716,6 +718,41 @@ body {
   background: var(--miss-control-bg);
   border-color: var(--miss-control-line);
   color: var(--miss-control-text);
+}
+
+.weekly-goal-toast {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top) + 78px);
+  z-index: 160;
+  width: min(calc(100% - 36px), 360px);
+  transform: translateX(-50%);
+  padding: 13px 16px;
+  border: 1px solid rgba(219, 53, 111, 0.24);
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff4b8, #ff7eb3);
+  color: #67304a;
+  box-shadow: 0 14px 32px rgba(89, 52, 74, 0.24);
+  font-size: 1.02rem;
+  font-weight: 800;
+  text-align: center;
+  pointer-events: none;
+  animation: toast-pop 0.22s ease-out;
+}
+
+.weekly-goal-toast.hidden {
+  display: none;
+}
+
+@keyframes toast-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 
 .month-table tbody td.weight-up {
